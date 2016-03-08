@@ -32,7 +32,7 @@ namespace LeagueSharp.Loader.Class.Installer
     using LeagueSharp.Loader.Data;
     using LeagueSharp.Loader.Views;
 
-    using PlaySharp.Service.Model;
+    using PlaySharp.Service.WebService.Model;
 
     public class Dependency
     {

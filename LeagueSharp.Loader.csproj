@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\LibGit2Sharp.0.21.0.176\build\net40\LibGit2Sharp.props" Condition="Exists('packages\LibGit2Sharp.0.21.0.176\build\net40\LibGit2Sharp.props')" />
+  <Import Project="packages\LibGit2Sharp.NativeBinaries.1.0.129\build\LibGit2Sharp.NativeBinaries.props" Condition="Exists('packages\LibGit2Sharp.NativeBinaries.1.0.129\build\LibGit2Sharp.NativeBinaries.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
@@ -74,8 +74,8 @@
       <HintPath>packages\Hardcodet.NotifyIcon.Wpf.1.0.5\lib\net45\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="LibGit2Sharp">
-      <HintPath>packages\LibGit2Sharp.0.21.0.176\lib\net40\LibGit2Sharp.dll</HintPath>
+    <Reference Include="LibGit2Sharp, Version=0.22.0.0, Culture=neutral, PublicKeyToken=7cbde695407f0333, processorArchitecture=MSIL">
+      <HintPath>packages\LibGit2Sharp.0.22.0\lib\net40\LibGit2Sharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MahApps.Metro">
@@ -84,20 +84,19 @@
     </Reference>
     <Reference Include="Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Build.Framework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="NBug">
-      <HintPath>References\NBug.dll</HintPath>
+    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>packages\Mono.Security.3.2.3.0\lib\net45\Mono.Security.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="PlaySharp.Service">
+    <Reference Include="PlaySharp.Service, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7e3dc52b16ce4f66, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>References\PlaySharp.Service.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework" />
-    <Reference Include="RestSharp">
-      <HintPath>References\RestSharp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -106,6 +105,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\MahApps.Metro.1.2.4.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
@@ -127,7 +127,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Class\AssemblyDatabase.cs" />
     <Compile Include="Class\Auth.cs" />
     <Compile Include="Class\FolderSelectDialog.cs" />
     <Compile Include="Class\Injection.cs" />
@@ -147,6 +146,10 @@
     <Compile Include="Class\Shared\LoginCredentials.cs" />
     <Compile Include="Class\Shared\LSharpAssembly.cs" />
     <Compile Include="Class\Shared\ServiceFactory.cs" />
+    <Compile Include="Class\StrongName\AssemblyInfo.cs" />
+    <Compile Include="Class\EdgeTrigger.cs" />
+    <Compile Include="Class\StrongName\StrongNameManager.cs" />
+    <Compile Include="Class\StrongName\StrongNameUtility.cs" />
     <Compile Include="Class\Updater.cs" />
     <Compile Include="Class\WebService.cs" />
     <Compile Include="Class\Win32Imports.cs" />
@@ -364,7 +367,7 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\LibGit2Sharp.0.21.0.176\build\net40\LibGit2Sharp.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\LibGit2Sharp.0.21.0.176\build\net40\LibGit2Sharp.props'))" />
+    <Error Condition="!Exists('packages\LibGit2Sharp.NativeBinaries.1.0.129\build\LibGit2Sharp.NativeBinaries.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\LibGit2Sharp.NativeBinaries.1.0.129\build\LibGit2Sharp.NativeBinaries.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

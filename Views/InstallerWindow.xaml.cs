@@ -40,9 +40,7 @@ namespace LeagueSharp.Loader.Views
 
     using MahApps.Metro.Controls.Dialogs;
 
-    using PlaySharp.Service.Model;
-
-    using RestSharp.Extensions.MonoHttp;
+    using PlaySharp.Service.WebService.Model;
 
     #endregion
 

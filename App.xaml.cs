@@ -37,8 +37,6 @@ namespace LeagueSharp.Loader
 
     using MahApps.Metro;
 
-    using NBug;
-
     public partial class App
     {
         private Mutex mutex;
@@ -46,13 +44,6 @@ namespace LeagueSharp.Loader
         private bool createdNew;
 
         public static string[] Args { get; set; }
-
-        public App()
-        {
-            AppDomain.CurrentDomain.UnhandledException += Handler.UnhandledException;
-            Current.DispatcherUnhandledException += Handler.DispatcherUnhandledException;
-            TaskScheduler.UnobservedTaskException += Handler.UnobservedTaskException;
-        }
 
         protected override void OnStartup(StartupEventArgs e)
         {

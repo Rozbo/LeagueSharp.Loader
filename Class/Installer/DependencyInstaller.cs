@@ -31,9 +31,7 @@ namespace LeagueSharp.Loader.Class.Installer
 
     using LeagueSharp.Loader.Data;
 
-    using Newtonsoft.Json;
-
-    using PlaySharp.Service.Model;
+    using PlaySharp.Service.WebService.Model;
 
     public class DependencyInstaller
     {
@@ -106,7 +104,7 @@ namespace LeagueSharp.Loader.Class.Installer
 
             try
             {
-                assemblies = AssemblyDatabase.Assemblies.Where(a => a.Type == AssemblyType.Library).ToList();
+                assemblies = WebService.Assemblies.Where(a => a.Type == AssemblyType.Library).ToList();
             }
             catch (Exception e)
             {

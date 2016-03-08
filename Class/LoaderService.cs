@@ -28,6 +28,8 @@ namespace LeagueSharp.Loader.Class
     using LeagueSharp.Loader.Data;
     using LeagueSharp.Sandbox.Shared;
 
+    using PlaySharp.Service.WebService.Model;
+
     public class LoaderService : ILoaderService
     {
         public List<LSharpAssembly> GetAssemblyList(int pid)

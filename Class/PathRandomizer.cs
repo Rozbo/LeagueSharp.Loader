@@ -29,6 +29,8 @@ namespace LeagueSharp.Loader.Class
 
     using LeagueSharp.Loader.Data;
 
+    using PlaySharp.Toolkit.StrongName;
+
     internal class PathRandomizer
     {
         public static Random RandomNumberGenerator = new Random();
@@ -191,44 +193,8 @@ namespace LeagueSharp.Loader.Class
                     Environment.Exit(0);
                 }
 
-                var p = new Process
-                    {
-                        StartInfo =
-                            new ProcessStartInfo
-                                {
-                                    UseShellExecute = true,
-                                    WorkingDirectory = Directories.CoreDirectory,
-                                    FileName = Path.Combine(Directories.CoreDirectory, "sn.exe"),
-                                    Arguments = string.Format("-q -Ra \"{0}\" key.snk", LeagueSharpDllPath),
-                                    WindowStyle = ProcessWindowStyle.Hidden
-                                }
-                    };
-                p.Start();
-                p.WaitForExit();
-
-                if (p.ExitCode != 0)
-                {
-                    p = new Process
-                        {
-                            StartInfo =
-                                new ProcessStartInfo
-                                    {
-                                        UseShellExecute = false,
-                                        RedirectStandardOutput = true,
-                                        WorkingDirectory = Directories.CoreDirectory,
-                                        FileName = Path.Combine(Directories.CoreDirectory, "sn.exe"),
-                                        Arguments = string.Format("-q -Ra \"{0}\" key.snk", LeagueSharpDllPath)
-                                    }
-                        };
-
-                    p.Start();
-                    var output = p.StandardOutput.ReadToEnd();
-                    p.WaitForExit();
-                    if (p.ExitCode != 0)
-                    {
-                        MessageBox.Show(string.Format("Could not Sign LeagueSharp.dll, Output:\r\n {0}", output));
-                    }
-                }
+                result = result
+                         && StrongNameUtility.ReSign(LeagueSharpDllPath, Path.Combine(Directories.CoreDirectory, "key.snk"));
 
                 return result;
             }

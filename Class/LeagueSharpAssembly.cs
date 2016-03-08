@@ -36,9 +36,7 @@ namespace LeagueSharp.Loader.Class
 
     using Microsoft.Build.Evaluation;
 
-    using PlaySharp.Service.Model;
-
-    using RestSharp.Extensions.MonoHttp;
+    using PlaySharp.Service.WebService.Model;
 
     #endregion
 
@@ -97,14 +95,14 @@ namespace LeagueSharp.Loader.Class
         }
     }
 
-    public enum AssemblyType
-    {
-        Library = 3,
+    //public enum AssemblyType
+    //{
+    //    Library = 3,
 
-        Executable = 1,
+    //    Executable = 1,
 
-        Unknown,
-    }
+    //    Unknown,
+    //}
 
     public enum AssemblyStatus
     {
@@ -277,16 +275,24 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
+        [XmlIgnore]
         public AssemblyType Type
         {
             get
             {
                 if (this.type == null)
                 {
+                    var assembly = WebService.Assemblies.FirstOrDefault(a => a.Name == this.Name || a.Name == this.DisplayName);
+                    if (assembly != null)
+                    {
+                        this.type = assembly.Type;
+                        return assembly.Type;
+                    }
+
                     var project = this.GetProject();
                     if (project != null)
                     {
-                        this.type = project.GetPropertyValue("OutputType").ToLower().Contains("exe") ? AssemblyType.Executable : AssemblyType.Library;
+                        this.type = project.GetPropertyValue("OutputType").ToLower().Contains("exe") ? AssemblyType.Champion : AssemblyType.Library;
                     }
                 }
 

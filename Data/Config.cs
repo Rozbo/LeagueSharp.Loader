@@ -38,7 +38,7 @@ namespace LeagueSharp.Loader.Data
 
     using Newtonsoft.Json;
 
-    using PlaySharp.Service.Model;
+    using PlaySharp.Service.WebService.Model;
 
     using MessageBox = System.Windows.MessageBox;
 
@@ -575,9 +575,9 @@ namespace LeagueSharp.Loader.Data
                     WebService.Client.CloudStore(Instance, "Config");
                 }
             }
-            catch
+            catch(Exception e)
             {
-                MessageBox.Show(Utility.GetMultiLanguageText("ConfigWriteError"));
+                MessageBox.Show(e.ToString());
             }
         }
 

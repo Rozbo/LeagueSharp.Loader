@@ -31,10 +31,9 @@ namespace LeagueSharp.Loader.Class
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
+    using System.Web;
     using System.Windows.Forms;
     using System.Xml.Serialization;
-
-    using RestSharp.Extensions.MonoHttp;
 
     using LeagueSharp.Loader.Data;
 

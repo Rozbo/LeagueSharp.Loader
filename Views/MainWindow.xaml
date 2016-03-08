@@ -504,7 +504,7 @@
             </TabItem>
         </TabControl>
         <TextBlock x:Name="Header" Text="LEAGUESHARP" FontSize="15" Foreground="White" IsHitTestVisible="False" Margin="10,-25,0,0"
-                   Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="200" />
+                   Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" Width="478" />
 
         <Controls:ProgressRing IsActive="{Binding Working}" Foreground="{DynamicResource AccentColorBrush}"
                                            HorizontalAlignment="Right" Margin="0,0,22,50" VerticalAlignment="Bottom"

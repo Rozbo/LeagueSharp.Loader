@@ -47,9 +47,10 @@ namespace LeagueSharp.Loader.Views
 
     using Microsoft.Build.Evaluation;
 
-    using PlaySharp.Service.Model;
+    using PlaySharp.Service.WebService.Model;
+    using PlaySharp.Toolkit.Helper;
 
-    using AssemblyType = LeagueSharp.Loader.Class.AssemblyType;
+    using AssemblyType = PlaySharp.Service.WebService.Model.AssemblyType;
 
     public partial class MainWindow : INotifyPropertyChanged
     {
@@ -341,6 +342,7 @@ namespace LeagueSharp.Loader.Views
             this.Browser.Visibility = Visibility.Hidden;
             this.TosBrowser.Visibility = Visibility.Hidden;
 
+            await this.UpdateAccount();
             await this.CheckForUpdates(true, true, true);
         }
 
@@ -482,6 +484,8 @@ namespace LeagueSharp.Loader.Views
 
             #endregion
 
+            this.UpdateAccount();
+
             #region assembly compile
 
             var allAssemblies = new List<LeagueSharpAssembly>();
@@ -505,6 +509,43 @@ namespace LeagueSharp.Loader.Views
             Utility.Log(LogStatus.Info, "Bootstrap", "System Initialisation Complete", Logs.MainLog);
 
             this.MainTabControl.SelectedIndex = TAB_ASSEMBLIES;
+        }
+
+        private DateTime LastAccountUpdate { get; set; }
+
+        private async Task UpdateAccount()
+        {
+            try
+            {
+                if (DateTime.Now - this.LastAccountUpdate < TimeSpan.FromMinutes(10))
+                {
+                    return;
+                }
+
+                this.LastAccountUpdate = DateTime.Now;
+
+                var account = await WebService.Client.AccountAsync();
+                var text = "Normal";
+
+                if (account.IsSubscriber)
+                {
+                    text = "Sub";
+                }
+                if (account.IsBotter)
+                {
+                    text = "Bot";
+                }
+                if (account.IsDev)
+                {
+                    text = "Dev";
+                }
+
+                this.Header.Text = $"LEAGUESHARP - {account.DisplayName}/{text} - {account.GamesPlayed}/{account.MaxGames} - {Assembly.GetExecutingAssembly().GetName().Version}";
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private async Task CheckForUpdates(bool loader, bool core, bool showDialogOnFinish)
@@ -1001,6 +1042,30 @@ namespace LeagueSharp.Loader.Views
             this.InjectThread = new Thread(
                 () =>
                 {
+                    var trigger = new EdgeTrigger();
+
+                    trigger.Rising += (sender, args) =>
+                    {
+                        Application.Current.Dispatcher.InvokeAsync(
+                            () =>
+                            {
+                                this.icon_connected.Visibility = Visibility.Visible;
+                                this.icon_disconnected.Visibility = Visibility.Collapsed;
+                            });
+                    };
+
+                    trigger.Falling += (sender, args) =>
+                    {
+                        this.UpdateAccount();
+
+                        Application.Current.Dispatcher.InvokeAsync(
+                            () =>
+                            {
+                                this.icon_connected.Visibility = Visibility.Collapsed;
+                                this.icon_disconnected.Visibility = Visibility.Visible;
+                            });
+                    };
+
                     while (true)
                     {
                         Thread.Sleep(3000);
@@ -1010,22 +1075,8 @@ namespace LeagueSharp.Loader.Views
                             if (Config.Instance.Install)
                             {
                                 Injection.Pulse();
+                                trigger.Value = Injection.IsInjected;
                             }
-
-                            Application.Current.Dispatcher.Invoke(
-                                () =>
-                                    {
-                                        if (Injection.IsInjected)
-                                        {
-                                            this.icon_connected.Visibility = Visibility.Visible;
-                                            this.icon_disconnected.Visibility = Visibility.Collapsed;
-                                        }
-                                        else
-                                        {
-                                            this.icon_connected.Visibility = Visibility.Collapsed;
-                                            this.icon_disconnected.Visibility = Visibility.Visible;
-                                        }
-                                    });
                         }
                         catch
                         {
@@ -1361,7 +1412,7 @@ namespace LeagueSharp.Loader.Views
                         }
 
                         var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
-                        var champeMatch = assembly.Type == PlaySharp.Service.Model.AssemblyType.Champion && Regex.Match(string.Join(", ", assembly.Champions), searchText, RegexOptions.IgnoreCase).Success;
+                        var champeMatch = assembly.Type == AssemblyType.Champion && Regex.Match(string.Join(", ", assembly.Champions), searchText, RegexOptions.IgnoreCase).Success;
                         var authorMatch = Regex.Match(assembly.AuthorName, searchText, RegexOptions.IgnoreCase);
                         var svnNameMatch = Regex.Match(assembly.GithubUrl, searchText, RegexOptions.IgnoreCase);
                         var descNameMatch = Regex.Match(assembly.Description, searchText, RegexOptions.IgnoreCase);

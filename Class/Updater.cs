@@ -39,7 +39,7 @@ namespace LeagueSharp.Loader.Class
     using LeagueSharp.Loader.Data;
     using LeagueSharp.Loader.Views;
 
-    using PlaySharp.Service.Model;
+    using PlaySharp.Service.WebService.Model;
 
     #endregion
 
@@ -336,7 +336,7 @@ namespace LeagueSharp.Loader.Class
                     {
                         try
                         {
-                            var entries = AssemblyDatabase.Assemblies.ToList();
+                            var entries = WebService.Assemblies.ToList();
                             foreach (var entry in entries)
                             {
                                 entry.Name = entry.Name.WebDecode();
