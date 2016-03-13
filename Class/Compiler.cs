@@ -29,11 +29,13 @@ namespace LeagueSharp.Loader.Class
 
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Logging;
-
+    using System.Collections.Generic;
     #endregion
 
     internal class Compiler
     {
+        private static List<string> ItemsTypeBlackList = new List<string> { "PreBuildEvent", "PostBuildEvent", "PreLinkEvent", "CustomBuildStep" };
+
         public static bool Compile(Project project, string logfile, Log log)
         {
             try
@@ -58,6 +60,26 @@ namespace LeagueSharp.Loader.Class
                             }
                             var fileLogger = new FileLogger { Parameters = @"logfile=" + logfile, ShowSummary = true };
                             ProjectCollection.GlobalProjectCollection.RegisterLogger(fileLogger);
+                        }
+                    }
+                    
+                    foreach (var item in project.Items)
+                    {
+                        try
+                        {
+                            if (ItemsTypeBlackList.FindIndex(listItem => listItem.Equals(item.ItemType, StringComparison.InvariantCultureIgnoreCase)) >= 0)
+                            {
+                                Utility.Log(
+                                    LogStatus.Error,
+                                    "Compiler",
+                                    $"Compile - Blacklisted item type detected - {project.FullPath}",
+                                    log);
+
+                                return false;
+                            }
+                        }
+                        catch (Exception)
+                        {
                         }
                     }
 
