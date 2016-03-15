@@ -29,6 +29,7 @@
                         <RadioButton x:Name="SvnRadioButton" Content="{DynamicResource Github}" VerticalAlignment="Top"
                                      Margin="26,10,0,0" />
                         <ComboBox x:Name="SvnComboBox" ItemsSource="{Binding Config.KnownRepositories}"
+                                  DisplayMemberPath="Url"
                                   VerticalAlignment="Top" IsEditable="True" GotFocus="SvnComboBox_OnGotFocus"
                                   Margin="60,5,10,0" />
 
@@ -72,7 +73,8 @@
                             Width="75" Height="25" VerticalAlignment="Bottom" Click="SelectAllButton_Click" />
                     <Button Content="{DynamicResource DeselectAll}" HorizontalAlignment="Left" Margin="90,0,0,10"
                             Width="86" Height="25" VerticalAlignment="Bottom" Click="UnselectAllButton_Click" />
-                    <TextBox x:Name="search" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap"
+                    <TextBox x:Name="search" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0"
+                             TextWrapping="Wrap"
                              VerticalAlignment="Top" Width="135" TextChanged="TextBoxBase_OnTextChanged" />
                 </Grid>
             </TabItem>

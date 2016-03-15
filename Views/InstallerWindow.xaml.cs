@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// InstallerWindow.xaml.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="InstallerWindow.xaml.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Views
 {
     #region
@@ -56,7 +41,7 @@ namespace LeagueSharp.Loader.Views
             this.DataContext = this;
         }
 
-        private ProgressDialogController controller { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public bool AbleToList
         {
@@ -64,6 +49,7 @@ namespace LeagueSharp.Loader.Views
             {
                 return this._ableToList;
             }
+
             set
             {
                 this._ableToList = value;
@@ -77,6 +63,7 @@ namespace LeagueSharp.Loader.Views
             {
                 return this._foundAssemblies;
             }
+
             set
             {
                 this._foundAssemblies = value;
@@ -84,7 +71,7 @@ namespace LeagueSharp.Loader.Views
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private ProgressDialogController controller { get; set; }
 
         public static async Task InstallAssembly(AssemblyEntry assembly, bool silent)
         {
@@ -98,6 +85,13 @@ namespace LeagueSharp.Loader.Views
                 var projectName = Path.GetFileNameWithoutExtension(new Uri(assembly.GithubUrl).AbsolutePath).WebDecode();
                 var repositoryMatch = Regex.Match(assembly.GithubUrl, @"^(http[s]?)://(?<host>.*?)/(?<author>.*?)/(?<repo>.*?)(/{1}|$)");
                 var repositoryUrl = $"https://{repositoryMatch.Groups["host"]}/{repositoryMatch.Groups["author"]}/{repositoryMatch.Groups["repo"]}";
+
+                // HACK: :^)
+                var redirect = Config.Instance.BlockedRepositories.Where(r => r.HasRedirect).FirstOrDefault(r => repositoryUrl.StartsWith(r.Url));
+                if (redirect != null)
+                {
+                    repositoryUrl = redirect.Redirect;
+                }
 
                 var installer = new InstallerWindow { Owner = MainWindow.Instance };
 
@@ -124,7 +118,7 @@ namespace LeagueSharp.Loader.Views
             var assemblyName = m.Groups[4].ToString();
 
             var w = new InstallerWindow { Owner = MainWindow.Instance };
-            w.ShowProgress($"https://github.com/{gitHubUser}/{repositoryName}", true, assemblyName != "" ? m.Groups[4].ToString() : null);
+            w.ShowProgress($"https://github.com/{gitHubUser}/{repositoryName}", true, assemblyName != string.Empty ? m.Groups[4].ToString() : null);
             w.ShowDialog();
         }
 
@@ -181,39 +175,38 @@ namespace LeagueSharp.Loader.Views
             {
                 await Task.Factory.StartNew(
                     () =>
+                    {
+                        var location1 = location;
+                        var redirect = Config.Instance.BlockedRepositories.Where(r => r.HasRedirect).FirstOrDefault(r => location1.StartsWith(r.Url));
+                        if (redirect != null)
                         {
-                            var updatedDir = GitUpdater.Update(location);
+                            location = redirect.Redirect;
+                        }
 
-                            if (Config.Instance.BlockedRepositories.Any(location.StartsWith))
-                            {
-                                this.FoundAssemblies = new List<LeagueSharpAssembly>();
-                            }
-                            else
-                            {
-                                this.FoundAssemblies = LeagueSharpAssemblies.GetAssemblies(updatedDir, location);
-                            }
+                        var updatedDir = GitUpdater.Update(location);
+                        this.FoundAssemblies = LeagueSharpAssemblies.GetAssemblies(updatedDir, location);
 
-                            foreach (var assembly in this.FoundAssemblies.ToArray())
-                            {
-                                var assemblies =
-                                    Config.Instance.SelectedProfile.InstalledAssemblies.Where(
-                                        y => y.Name == assembly.Name && y.SvnUrl == assembly.SvnUrl).ToList();
-                                assemblies.ForEach(a => this.FoundAssemblies.Remove(a));
-                            }
+                        foreach (var assembly in this.FoundAssemblies.ToArray())
+                        {
+                            var assemblies =
+                                Config.Instance.SelectedProfile.InstalledAssemblies.Where(
+                                    y => y.Name == assembly.Name && y.SvnUrl == assembly.SvnUrl).ToList();
+                            assemblies.ForEach(a => this.FoundAssemblies.Remove(a));
+                        }
 
-                            if (autoInstallName != null)
+                        if (autoInstallName != null)
+                        {
+                            foreach (var assembly in this.FoundAssemblies)
                             {
-                                foreach (var assembly in this.FoundAssemblies)
+                                if (assembly.Name.ToLower() == autoInstallName.ToLower())
                                 {
-                                    if (assembly.Name.ToLower() == autoInstallName.ToLower())
-                                    {
-                                        assembly.InstallChecked = true;
+                                    assembly.InstallChecked = true;
 
-                                        Application.Current.Dispatcher.Invoke(() => { this.search.Text = autoInstallName; });
-                                    }
+                                    Application.Current.Dispatcher.Invoke(() => { this.search.Text = autoInstallName; });
                                 }
                             }
-                        });
+                        }
+                    });
             }
 
             this.AbleToList = true;
@@ -317,6 +310,7 @@ namespace LeagueSharp.Loader.Views
             {
                 assembly.InstallChecked = true;
             }
+
             this.OnPropertyChanged("FoundAssemblies");
         }
 
@@ -332,6 +326,7 @@ namespace LeagueSharp.Loader.Views
                         this.FoundAssemblies.Add(assembly.Copy());
                     }
                 }
+
                 this.FoundAssemblies = this.FoundAssemblies.Distinct().ToList();
 
                 this.installTabControl.SelectedIndex++;
@@ -339,7 +334,7 @@ namespace LeagueSharp.Loader.Views
             else
             {
                 this.ShowProgress(
-                    this.SvnRadioButton.IsChecked == true ? this.SvnComboBox.Text : this.PathTextBox.Text,
+                    this.SvnRadioButton.IsChecked == true ? this.SvnComboBox.Text : this.PathTextBox.Text, 
                     this.SvnRadioButton.IsChecked == true);
             }
         }
@@ -366,19 +361,19 @@ namespace LeagueSharp.Loader.Views
             var view = CollectionViewSource.GetDefaultView(this.FoundAssemblies);
             searchText = searchText.Replace("*", "(.*)");
             view.Filter = obj =>
+            {
+                try
                 {
-                    try
-                    {
-                        var assembly = obj as LeagueSharpAssembly;
-                        var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
+                    var assembly = obj as LeagueSharpAssembly;
+                    var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
 
-                        return nameMatch.Success;
-                    }
-                    catch (Exception)
-                    {
-                        return true;
-                    }
-                };
+                    return nameMatch.Success;
+                }
+                catch (Exception)
+                {
+                    return true;
+                }
+            };
         }
 
         private void UnselectAllButton_Click(object sender, RoutedEventArgs e)
@@ -387,6 +382,7 @@ namespace LeagueSharp.Loader.Views
             {
                 assembly.InstallChecked = false;
             }
+
             this.OnPropertyChanged("FoundAssemblies");
         }
     }

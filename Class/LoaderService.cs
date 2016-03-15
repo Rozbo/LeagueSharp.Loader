@@ -1,26 +1,10 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// LoaderService.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LoaderService.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Windows.Input;
@@ -43,20 +27,20 @@ namespace LeagueSharp.Loader.Class
             {
                 assemblies.AddRange(
                     Config.Instance.Profiles[0].InstalledAssemblies.Where(
-                        a => !a.IsBlocked && a.InjectChecked && a.Type != AssemblyType.Library)
+                        a => a.InjectChecked && a.Type != AssemblyType.Library)
                                                .Select(
                                                    assembly =>
                                                    new LSharpAssembly
-                                                       {
-                                                           Name = assembly.Name,
-                                                           PathToBinary = assembly.PathToBinary
-                                                       })
+                                                   {
+                                                       Name = assembly.Name, 
+                                                       PathToBinary = assembly.PathToBinary
+                                                   })
                                                .ToList());
             }
 
             assemblies.AddRange(
                 Config.Instance.SelectedProfile.InstalledAssemblies.Where(
-                    a => !a.IsBlocked && a.InjectChecked && a.Type != AssemblyType.Library)
+                    a => a.InjectChecked && a.Type != AssemblyType.Library)
                       .Select(
                           assembly => new LSharpAssembly { Name = assembly.Name, PathToBinary = assembly.PathToBinary })
                       .ToList());
@@ -75,7 +59,7 @@ namespace LeagueSharp.Loader.Class
             var ping = true;
             var menuToggle = 0x78;
             var menuPress = 0x10;
-            var selectedLanguage = "";
+            var selectedLanguage = string.Empty;
             var statistics = true;
 
             try
@@ -83,7 +67,8 @@ namespace LeagueSharp.Loader.Class
                 reload = KeyInterop.VirtualKeyFromKey(Config.Instance.Hotkeys.SelectedHotkeys.First(h => h.Name == "Reload").Hotkey);
                 recompile = KeyInterop.VirtualKeyFromKey(Config.Instance.Hotkeys.SelectedHotkeys.First(h => h.Name == "CompileAndReload").Hotkey);
                 antiAfk = Config.Instance.Settings.GameSettings.First(s => s.Name == "Anti-AFK").SelectedValue == "True";
-                console = Config.Instance.Settings.GameSettings.First(s => s.Name == "Debug Console").SelectedValue == "True" || Config.Instance.ShowDevOptions || Config.Instance.EnableDebug;
+                console = Config.Instance.Settings.GameSettings.First(s => s.Name == "Debug Console").SelectedValue == "True"
+                          || Config.Instance.ShowDevOptions || Config.Instance.EnableDebug;
                 towerRange = Config.Instance.Settings.GameSettings.First(s => s.Name == "Display Enemy Tower Range").SelectedValue == "True";
                 extendedZoom = Config.Instance.Settings.GameSettings.First(s => s.Name == "Extended Zoom").SelectedValue == "True";
                 drawings = Config.Instance.Settings.GameSettings.First(s => s.Name == "Show Drawings").SelectedValue == "True";
@@ -99,25 +84,25 @@ namespace LeagueSharp.Loader.Class
             }
 
             return new Configuration
-                {
-                    DataDirectory = Directories.AppDataDirectory,
-                    LeagueSharpDllPath = PathRandomizer.LeagueSharpDllPath,
-                    LibrariesDirectory = Directories.CoreDirectory,
-                    ReloadKey = reload,
-                    ReloadAndRecompileKey = recompile,
-                    MenuToggleKey = menuToggle,
-                    MenuKey = menuPress,
-                    UnloadKey = 0x75,
-                    AntiAfk = antiAfk,
-                    Console = console,
-                    TowerRange = towerRange,
-                    SelectedLanguage = selectedLanguage,
-                    ExtendedZoom = extendedZoom,
-                    ShowPing = ping,
-                    ShowDrawing = drawings,
-                    SendStatistics = statistics,
-                    Permissions = null
-                };
+                   {
+                       DataDirectory = Directories.AppDataDirectory, 
+                       LeagueSharpDllPath = PathRandomizer.LeagueSharpDllPath, 
+                       LibrariesDirectory = Directories.CoreDirectory, 
+                       ReloadKey = reload, 
+                       ReloadAndRecompileKey = recompile, 
+                       MenuToggleKey = menuToggle, 
+                       MenuKey = menuPress, 
+                       UnloadKey = 0x75, 
+                       AntiAfk = antiAfk, 
+                       Console = console, 
+                       TowerRange = towerRange, 
+                       SelectedLanguage = selectedLanguage, 
+                       ExtendedZoom = extendedZoom, 
+                       ShowPing = ping, 
+                       ShowDrawing = drawings, 
+                       SendStatistics = statistics, 
+                       Permissions = null
+                   };
         }
 
         public void Recompile(int pid)

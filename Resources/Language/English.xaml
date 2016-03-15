@@ -18,7 +18,7 @@
     <system:String x:Key="ColumnName">Name</system:String>
     <system:String x:Key="ColumnType">Type</system:String>
     <system:String x:Key="ColumnVersion">Version</system:String>
-    <system:String x:Key="ColumnLocation">Location</system:String>
+    <system:String x:Key="ColumnAuthor">Author</system:String>
     <system:String x:Key="ColumnDescription">Description</system:String>
 
     <!-- MainWindow Assemblies DB datagrid columns -->
@@ -26,7 +26,7 @@
     <system:String x:Key="DBColumnDescription">Description</system:String>
     <system:String x:Key="DBColumnAuthor">Author</system:String>
     <system:String x:Key="DBColumnScore">Score</system:String>
-    
+
     <!-- MainWindow Assemblies DB datagrid Menu -->
     <system:String x:Key="InstallFromDB">Install</system:String>
 
@@ -86,7 +86,7 @@
     <system:String x:Key="EnableDebug">Enable Assembly Debug (may decrease performance)</system:String>
 
     <system:String x:Key="CloudConfig">Use Cloud Integration</system:String>
-    
+
 
     <system:String x:Key="Inject">Inject</system:String>
     <system:String x:Key="Logout">Logout</system:String>

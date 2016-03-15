@@ -1,3 +1,8 @@
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="WebService.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     using System;
@@ -13,7 +18,10 @@ namespace LeagueSharp.Loader.Class
     {
         private static IReadOnlyList<AssemblyEntry> assemblies = new List<AssemblyEntry>();
 
-        public static WebServiceClient Client { get; }
+        static WebService()
+        {
+            Client = new WebServiceClient();
+        }
 
         public static IReadOnlyList<AssemblyEntry> Assemblies
         {
@@ -35,9 +43,6 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
-        static WebService()
-        {
-            Client = new WebServiceClient();
-        }
+        public static WebServiceClient Client { get; }
     }
 }

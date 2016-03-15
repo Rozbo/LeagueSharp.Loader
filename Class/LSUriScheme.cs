@@ -1,34 +1,15 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// LSUriScheme.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LSUriScheme.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     #region
 
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
-    using LeagueSharp.Loader.Data;
     using LeagueSharp.Loader.Views;
 
     using MahApps.Metro.Controls;

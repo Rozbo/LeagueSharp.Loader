@@ -1,33 +1,16 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// LeagueSharpAssembly.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LeagueSharpAssembly.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
-    #region
-
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.RegularExpressions;
     using System.Windows;
     using System.Xml.Serialization;
@@ -38,98 +21,25 @@ namespace LeagueSharp.Loader.Class
 
     using PlaySharp.Service.WebService.Model;
 
-    #endregion
-
-    public static class LeagueSharpAssemblies
-    {
-        public static LeagueSharpAssembly GetAssembly(string projectFile, string url = "")
-        {
-            LeagueSharpAssembly foundAssembly = null;
-            try
-            {
-                var name = Path.GetFileNameWithoutExtension(projectFile);
-                foundAssembly = new LeagueSharpAssembly(name, projectFile, url);
-            }
-            catch (Exception e)
-            {
-                Utility.Log(LogStatus.Error, "Updater GetAssembly", e.ToString(), Logs.MainLog);
-            }
-
-            return foundAssembly;
-        }
-
-        public static List<LeagueSharpAssembly> GetAssemblies(string directory, string url = "")
-        {
-            var projectFiles = new List<string>();
-            var foundAssemblies = new List<LeagueSharpAssembly>();
-
-            try
-            {
-                projectFiles.AddRange(Directory.GetFiles(directory, "*.csproj", SearchOption.AllDirectories));
-                foreach (var projectFile in projectFiles)
-                {
-                    var name = Path.GetFileNameWithoutExtension(projectFile);
-                    var assembly = new LeagueSharpAssembly(name, projectFile, url);
-
-                    if (!string.IsNullOrEmpty(url))
-                    {
-                        var entry = Config.Instance.DatabaseAssemblies?.FirstOrDefault(a => a.Name == name)
-                                    ?? Config.Instance.DatabaseAssemblies?.FirstOrDefault(a => Path.GetFileNameWithoutExtension(a.GithubUrl) == name);
-
-                        if (entry != null)
-                        {
-                            assembly.Description = entry.Description.WebDecode();
-                            assembly.DisplayName = entry.Name.WebDecode();
-                        }
-                    }
-
-                    foundAssemblies.Add(assembly);
-                }
-            }
-            catch (Exception e)
-            {
-                Utility.Log(LogStatus.Error, "Updater", e.ToString(), Logs.MainLog);
-            }
-
-            return foundAssemblies;
-        }
-    }
-
-    //public enum AssemblyType
-    //{
-    //    Library = 3,
-
-    //    Executable = 1,
-
-    //    Unknown,
-    //}
-
-    public enum AssemblyStatus
-    {
-        Ready,
-
-        Updating,
-
-        UpdatingError,
-
-        CompilingError,
-
-        Compiling,
-    }
-
     [XmlType(AnonymousType = true)]
     [Serializable]
     public class LeagueSharpAssembly : INotifyPropertyChanged
     {
-        private string displayName = "";
+        private string author;
+
+        private string description;
+
+        private string displayName = string.Empty;
 
         private bool injectChecked;
 
         private bool installChecked;
 
+        private string name;
+
         private string pathToBinary = null;
 
-        private string pathToProjectFile = "";
+        private string pathToProjectFile = string.Empty;
 
         private string svnUrl;
 
@@ -145,21 +55,81 @@ namespace LeagueSharp.Loader.Class
             this.Name = name;
             this.PathToProjectFile = path;
             this.SvnUrl = svnUrl;
-            this.Description = "";
+            this.Description = string.Empty;
             this.Status = AssemblyStatus.Ready;
         }
 
-        public string Description { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Author
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this.SvnUrl) && string.IsNullOrEmpty(this.author))
+                {
+                    return "Local";
+                }
+
+                try
+                {
+                    if (string.IsNullOrEmpty(this.author))
+                    {
+                        var assembly =
+                            WebService.Assemblies.FirstOrDefault(a => Path.GetFileName(a.GithubUrl) == Path.GetFileName(this.PathToProjectFile));
+                        if (assembly != null)
+                        {
+                            this.author = assembly.AuthorName;
+                        }
+                        else
+                        {
+                            var repositoryMatch = Regex.Match(this.SvnUrl, @"^(http[s]?)://(?<host>.*?)/(?<author>.*?)/(?<repo>.*?)(/{1}|$)");
+                            if (repositoryMatch.Success)
+                            {
+                                this.author = repositoryMatch.Groups["author"].Value;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                return this.author;
+            }
+
+            set
+            {
+                this.author = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string Description
+        {
+            get
+            {
+                return this.description;
+            }
+
+            set
+            {
+                this.description = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         public string DisplayName
         {
             get
             {
-                return this.displayName == "" ? this.Name : this.displayName;
+                return this.displayName == string.Empty ? this.Name : this.displayName;
             }
+
             set
             {
                 this.displayName = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -174,10 +144,11 @@ namespace LeagueSharp.Loader.Class
 
                 return this.injectChecked;
             }
+
             set
             {
                 this.injectChecked = value;
-                this.OnPropertyChanged("InjectChecked");
+                this.OnPropertyChanged();
             }
         }
 
@@ -187,16 +158,29 @@ namespace LeagueSharp.Loader.Class
             {
                 return this.installChecked;
             }
+
             set
             {
                 this.installChecked = value;
-                this.OnPropertyChanged("InstallChecked");
+                this.OnPropertyChanged();
             }
         }
 
-        public string Location => this.SvnUrl == "" ? "Local" : this.SvnUrl;
+        public string Location => this.SvnUrl == string.Empty ? "Local" : this.SvnUrl;
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get
+            {
+                return this.name;
+            }
+
+            set
+            {
+                this.name = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         public string PathToBinary
         {
@@ -205,8 +189,8 @@ namespace LeagueSharp.Loader.Class
                 if (this.pathToBinary == null)
                 {
                     this.pathToBinary = Path.Combine(
-                        this.Type == AssemblyType.Library ? Directories.CoreDirectory : Directories.AssembliesDir,
-                        (this.Type == AssemblyType.Library ? "" : this.PathToProjectFile.GetHashCode().ToString("X"))
+                        this.Type == AssemblyType.Library ? Directories.CoreDirectory : Directories.AssembliesDir, 
+                        (this.Type == AssemblyType.Library ? string.Empty : this.PathToProjectFile.GetHashCode().ToString("X"))
                         + Path.GetFileName(Compiler.GetOutputFilePath(this.GetProject())));
                 }
 
@@ -235,6 +219,7 @@ namespace LeagueSharp.Loader.Class
 
                         if (!string.IsNullOrEmpty(projectFile))
                         {
+                            this.OnPropertyChanged();
                             this.pathToProjectFile = projectFile;
                             return projectFile;
                         }
@@ -247,6 +232,7 @@ namespace LeagueSharp.Loader.Class
 
                 return this.pathToProjectFile;
             }
+
             set
             {
                 if (!value.Contains("%AppData%"))
@@ -257,6 +243,8 @@ namespace LeagueSharp.Loader.Class
                 {
                     this.pathToProjectFile = value.Replace("%AppData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
                 }
+
+                this.OnPropertyChanged();
             }
         }
 
@@ -266,12 +254,20 @@ namespace LeagueSharp.Loader.Class
         {
             get
             {
+                var redirect = Config.Instance.BlockedRepositories.Where(r => r.HasRedirect).FirstOrDefault(r => r.Url == this.svnUrl);
+                if (redirect != null)
+                {
+                    this.OnPropertyChanged();
+                    return redirect.Redirect;
+                }
+
                 return this.svnUrl;
             }
+
             set
             {
                 this.svnUrl = value;
-                this.OnPropertyChanged("SvnUrl");
+                this.OnPropertyChanged();
             }
         }
 
@@ -318,21 +314,6 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
-        internal bool IsBlocked
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(this.SvnUrl))
-                {
-                    return false; // just to make sure :^)
-                }
-
-                return Config.Instance.BlockedRepositories.Any(x => this.SvnUrl.StartsWith(x));
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public static LeagueSharpAssembly FromAssemblyEntry(AssemblyEntry entry)
         {
             try
@@ -341,8 +322,8 @@ namespace LeagueSharp.Loader.Class
                 var repositoryUrl = $"https://{repositoryMatch.Groups["host"]}/{repositoryMatch.Groups["author"]}/{repositoryMatch.Groups["repo"]}";
                 var repositoryDirectory = Path.Combine(Directories.RepositoryDir, repositoryUrl.GetHashCode().ToString("X"), "trunk");
                 var path = Path.Combine(
-                    repositoryDirectory,
-                    entry.GithubUrl.Replace(repositoryUrl, "").Replace("/blob/master/", "").Replace("/", "\\"));
+                    repositoryDirectory, 
+                    entry.GithubUrl.Replace(repositoryUrl, string.Empty).Replace("/blob/master/", string.Empty).Replace("/", "\\"));
 
                 return new LeagueSharpAssembly(entry.Name, path, repositoryUrl);
             }
@@ -409,6 +390,7 @@ namespace LeagueSharp.Loader.Class
             {
                 return ((LeagueSharpAssembly)obj).PathToProjectFile == this.PathToProjectFile;
             }
+
             return false;
         }
 
@@ -424,11 +406,11 @@ namespace LeagueSharp.Loader.Class
                 try
                 {
                     var pf = new ProjectFile(this.PathToProjectFile, Logs.MainLog)
-                        {
-                            Configuration = Config.Instance.EnableDebug ? "Debug" : "Release",
-                            PlatformTarget = "x86",
-                            ReferencesPath = Directories.CoreDirectory
-                        };
+                             {
+                                 Configuration = Config.Instance.EnableDebug ? "Debug" : "Release", 
+                                 PlatformTarget = "x86", 
+                                 ReferencesPath = Directories.CoreDirectory
+                             };
                     pf.Change();
 
                     return pf.Project;
@@ -438,12 +420,18 @@ namespace LeagueSharp.Loader.Class
                     Utility.Log(LogStatus.Error, "Builder", "Error: " + e, Logs.MainLog);
                 }
             }
+
             return null;
+        }
+
+        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public void Update()
         {
-            if (this.Status == AssemblyStatus.Updating || this.SvnUrl == "")
+            if (this.Status == AssemblyStatus.Updating || this.SvnUrl == string.Empty)
             {
                 return;
             }
@@ -461,11 +449,6 @@ namespace LeagueSharp.Loader.Class
 
             this.Status = AssemblyStatus.Ready;
             this.OnPropertyChanged("Version");
-        }
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

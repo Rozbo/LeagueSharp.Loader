@@ -1,33 +1,18 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// MainWindow.xaml.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MainWindow.xaml.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Views
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -50,29 +35,25 @@ namespace LeagueSharp.Loader.Views
     using PlaySharp.Service.WebService.Model;
     using PlaySharp.Toolkit.Helper;
 
-    using AssemblyType = PlaySharp.Service.WebService.Model.AssemblyType;
-
     public partial class MainWindow : INotifyPropertyChanged
     {
-        public const int TAB_TOS = 0;
-        public const int TAB_NEWS = 1;
         public const int TAB_ASSEMBLIES = 2;
-        public const int TAB_SETTINGS = 3;
+
         public const int TAB_DATABASE = 4;
 
-        public BackgroundWorker AssembliesWorker = new BackgroundWorker();
+        public const int TAB_NEWS = 1;
+
+        public const int TAB_SETTINGS = 3;
+
+        public const int TAB_TOS = 0;
+
+        public readonly BackgroundWorker AssembliesWorker = new BackgroundWorker();
 
         public bool AssembliesWorkerCancelled;
-
-        public bool FirstTimeActivated = true;
-
-        public BackgroundWorker UpdaterWorker = new BackgroundWorker();
 
         private bool checkingForUpdates;
 
         private bool columnWidthChanging;
-
-        private Tuple<bool, string> loaderVersionCheckResult;
 
         private int rowIndex = -1;
 
@@ -82,16 +63,20 @@ namespace LeagueSharp.Loader.Views
 
         private bool working;
 
+        public MainWindow()
+        {
+            Instance = this;
+            this.InitializeComponent();
+            this.DataContext = this;
+        }
+
         public delegate Point GetPosition(IInputElement element);
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public static MainWindow Instance { get; private set; }
 
-        public MainWindow()
-        {
-            Instance = this;
-        }
+        public string BaseUrl => "https://services.joduska.me/api/v2.0";
 
         public bool CheckingForUpdates
         {
@@ -99,20 +84,15 @@ namespace LeagueSharp.Loader.Views
             {
                 return this.checkingForUpdates;
             }
+
             set
             {
                 this.checkingForUpdates = value;
-                this.OnPropertyChanged("CheckingForUpdates");
+                this.OnPropertyChanged();
             }
         }
 
-        public Config Config
-        {
-            get
-            {
-                return Config.Instance;
-            }
-        }
+        public Config Config => Config.Instance;
 
         public Thread InjectThread { get; set; }
 
@@ -122,10 +102,11 @@ namespace LeagueSharp.Loader.Views
             {
                 return this.statusString;
             }
+
             set
             {
                 this.statusString = value;
-                this.OnPropertyChanged("StatusString");
+                this.OnPropertyChanged();
             }
         }
 
@@ -135,12 +116,15 @@ namespace LeagueSharp.Loader.Views
             {
                 return this.working;
             }
+
             set
             {
                 this.working = value;
-                this.OnPropertyChanged("Working");
+                this.OnPropertyChanged();
             }
         }
+
+        private DateTime LastAccountUpdate { get; set; }
 
         public void MainWindow_OnClosing(object sender, CancelEventArgs e)
         {
@@ -167,8 +151,8 @@ namespace LeagueSharp.Loader.Views
         }
 
         public async Task PrepareAssemblies(
-            IEnumerable<LeagueSharpAssembly> assemblies,
-            bool update,
+            IEnumerable<LeagueSharpAssembly> assemblies, 
+            bool update, 
             bool compile)
         {
             this.Working = true;
@@ -177,25 +161,25 @@ namespace LeagueSharp.Loader.Views
 
             await Task.Factory.StartNew(
                 () =>
+                {
+                    if (update)
                     {
-                        if (update)
-                        {
-                            var updateList = leagueSharpAssemblies.GroupBy(a => a.SvnUrl).Select(g => g.First()).ToList();
+                        var updateList = leagueSharpAssemblies.GroupBy(a => a.SvnUrl).Select(g => g.First()).ToList();
 
-                            Parallel.ForEach(
-                                updateList,
-                                new ParallelOptions { MaxDegreeOfParallelism = this.Config.Workers },
-                                (assembly, state) =>
-                                    {
-                                        assembly.Update();
-                                        if (this.AssembliesWorker.CancellationPending)
-                                        {
-                                            this.AssembliesWorkerCancelled = true;
-                                            state.Break();
-                                        }
-                                    });
-                        }
-                    });
+                        Parallel.ForEach(
+                            updateList, 
+                            new ParallelOptions { MaxDegreeOfParallelism = this.Config.Workers }, 
+                            (assembly, state) =>
+                            {
+                                assembly.Update();
+                                if (this.AssembliesWorker.CancellationPending)
+                                {
+                                    this.AssembliesWorkerCancelled = true;
+                                    state.Break();
+                                }
+                            });
+                    }
+                });
 
             try
             {
@@ -209,39 +193,39 @@ namespace LeagueSharp.Loader.Views
 
             await Task.Factory.StartNew(
                 () =>
+                {
+                    if (compile)
                     {
-                        if (compile)
+                        var list =
+                            leagueSharpAssemblies.OrderByDescending(a => a.Type == AssemblyType.Library)
+                                                 .ThenByDescending(a => a.Name.StartsWith("LeagueSharp."))
+                                                 .ToList();
+
+                        foreach (var assembly in list)
                         {
-                            var list =
-                                leagueSharpAssemblies.OrderByDescending(a => a.Type == AssemblyType.Library)
-                                                     .ThenByDescending(a => a.Name.StartsWith("LeagueSharp."))
-                                                     .ToList();
+                            assembly.Compile();
 
-                            foreach (var assembly in list)
+                            if (this.AssembliesWorker.CancellationPending)
                             {
-                                assembly.Compile();
-
-                                if (this.AssembliesWorker.CancellationPending)
-                                {
-                                    this.AssembliesWorkerCancelled = true;
-                                    break;
-                                }
+                                this.AssembliesWorkerCancelled = true;
+                                break;
                             }
                         }
-                    });
+                    }
+                });
 
             Injection.PrepareDone = true;
 
             await Task.Factory.StartNew(
                 () =>
+                {
+                    ProjectCollection.GlobalProjectCollection.UnloadAllProjects();
+
+                    if (this.AssembliesWorkerCancelled)
                     {
-                        ProjectCollection.GlobalProjectCollection.UnloadAllProjects();
-                        
-                        if (this.AssembliesWorkerCancelled)
-                        {
-                            this.Close();
-                        }
-                    });
+                        this.Close();
+                    }
+                });
 
             if (!this.Config.EnableDebug)
             {
@@ -281,24 +265,9 @@ namespace LeagueSharp.Loader.Views
             await this.ShowMessageAsync(title, message);
         }
 
-        private void TosButton_OnClick(object sender, RoutedEventArgs e)
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            this.Browser.Visibility = Visibility.Hidden;
-
-            this.TosBrowser.Navigate("http://api.joduska.me/public/tos");
-            this.MainTabControl.SelectedIndex = TAB_TOS;
-
-            this.TosBrowser.Visibility = Visibility.Visible;
-        }
-
-        private void NewsButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            this.TosBrowser.Visibility = Visibility.Hidden;
-
-            this.Browser.Navigate("http://api.joduska.me/public/news/html");
-            this.MainTabControl.SelectedIndex = TAB_NEWS;
-
-            this.Browser.Visibility = Visibility.Visible;
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void AssemblyButton_OnClick(object sender, RoutedEventArgs e)
@@ -307,14 +276,7 @@ namespace LeagueSharp.Loader.Views
             this.TosBrowser.Visibility = Visibility.Hidden;
 
             this.MainTabControl.SelectedIndex = TAB_ASSEMBLIES;
-        }
-
-        private void SettingsButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            this.Browser.Visibility = Visibility.Hidden;
-            this.TosBrowser.Visibility = Visibility.Hidden;
-
-            this.MainTabControl.SelectedIndex = TAB_SETTINGS;
+            this.UpdateFilters();
         }
 
         private async void AssemblyDBButton_OnClick(object sender, RoutedEventArgs e)
@@ -335,29 +297,7 @@ namespace LeagueSharp.Loader.Views
             }
 
             this.MainTabControl.SelectedIndex = TAB_DATABASE;
-        }
-
-        private async void StatusButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            this.Browser.Visibility = Visibility.Hidden;
-            this.TosBrowser.Visibility = Visibility.Hidden;
-
-            await this.UpdateAccount();
-            await this.CheckForUpdates(true, true, true);
-        }
-
-        private void TosAccept_Click(object sender, RoutedEventArgs e)
-        {
-            Config.Instance.TosAccepted = true;
-
-            this.RightWindowCommands.Visibility = Visibility.Visible;
-            this.NewsButton_OnClick(null, null);
-        }
-
-        private void TosDecline_Click(object sender, RoutedEventArgs e)
-        {
-            this.MainWindow_OnClosing(null, null);
-            Environment.Exit(0);
+            this.UpdateFilters();
         }
 
         private void BaseDataGrid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -378,18 +318,12 @@ namespace LeagueSharp.Loader.Views
         {
             await this.CheckForUpdates(true, false, false);
 
-            #region UI
-            Updater.MainWindow = this;
-            this.Header.Text = "LEAGUESHARP " + Assembly.GetExecutingAssembly().GetName().Version;
-
             this.Browser.Visibility = Visibility.Hidden;
             this.TosBrowser.Visibility = Visibility.Hidden;
             this.GeneralSettingsItem.IsSelected = true;
 
-            #region ColumnWidth
-
             PropertyDescriptor pd = DependencyPropertyDescriptor.FromProperty(
-                DataGridColumn.ActualWidthProperty,
+                DataGridColumn.ActualWidthProperty, 
                 typeof(DataGridColumn));
 
             foreach (var column in this.InstalledAssembliesDataGrid.Columns)
@@ -403,37 +337,29 @@ namespace LeagueSharp.Loader.Views
             this.ColumnVersion.Width = Config.Instance.ColumnVersionWidth;
             this.ColumnLocation.Width = Config.Instance.ColumnLocationWidth;
 
-            #endregion
-
             this.NewsTabItem.Visibility = Visibility.Hidden;
             this.AssembliesTabItem.Visibility = Visibility.Hidden;
             this.SettingsTabItem.Visibility = Visibility.Hidden;
             this.AssemblyDB.Visibility = Visibility.Hidden;
             this.DataContext = this;
 
-            #region ContextMenu.DevMenu
-
             this.DevMenu.Visibility = Config.Instance.ShowDevOptions ? Visibility.Visible : Visibility.Collapsed;
             this.Config.PropertyChanged += (o, args) =>
+            {
+                if (args.PropertyName == "ShowDevOptions")
                 {
-                    if (args.PropertyName == "ShowDevOptions")
-                    {
-                        this.DevMenu.Visibility = Config.Instance.ShowDevOptions
-                                                      ? Visibility.Visible
-                                                      : Visibility.Collapsed;
-                    }
-                };
+                    this.DevMenu.Visibility = Config.Instance.ShowDevOptions
+                                                  ? Visibility.Visible
+                                                  : Visibility.Collapsed;
+                }
+            };
 
-            #endregion
-
-            Updater.MainWindow = this;
-
-            #endregion
-
-            #region login
+            this.Config.PropertyChanged += this.ConfigOnSearchTextChanged;
+            this.UpdateFilters();
 
             var result = await Auth.Login(Config.Instance.Username, Config.Instance.Password);
-            //Try to login with the saved credentials.
+
+            // Try to login with the saved credentials.
             if (!result.Item1)
             {
                 await this.ShowLoginDialog();
@@ -448,19 +374,12 @@ namespace LeagueSharp.Loader.Views
                 Config.SaveAndRestart();
             }
 
-            #endregion 
-
-            #region update
-
             await this.CheckForUpdates(false, true, false);
-            await Updater.UpdateBlockedRepos();
             await Updater.UpdateRepositories();
             await Updater.UpdateWebService();
             Utility.Log(LogStatus.Info, "Bootstrap", "Update Complete", Logs.MainLog);
 
-            #endregion
-
-            #region ToS
+            
 
             if (!Config.Instance.TosAccepted)
             {
@@ -482,7 +401,7 @@ namespace LeagueSharp.Loader.Views
                     }
                 });
 
-            #endregion
+            
 
             this.UpdateAccount();
 
@@ -511,43 +430,6 @@ namespace LeagueSharp.Loader.Views
             this.MainTabControl.SelectedIndex = TAB_ASSEMBLIES;
         }
 
-        private DateTime LastAccountUpdate { get; set; }
-
-        private async Task UpdateAccount()
-        {
-            try
-            {
-                if (DateTime.Now - this.LastAccountUpdate < TimeSpan.FromMinutes(10))
-                {
-                    return;
-                }
-
-                this.LastAccountUpdate = DateTime.Now;
-
-                var account = await WebService.Client.AccountAsync();
-                var text = "Normal";
-
-                if (account.IsSubscriber)
-                {
-                    text = "Sub";
-                }
-                if (account.IsBotter)
-                {
-                    text = "Bot";
-                }
-                if (account.IsDev)
-                {
-                    text = "Dev";
-                }
-
-                this.Header.Text = $"LEAGUESHARP - {account.DisplayName}/{text} - {account.GamesPlayed}/{account.MaxGames} - {Assembly.GetExecutingAssembly().GetName().Version}";
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
         private async Task CheckForUpdates(bool loader, bool core, bool showDialogOnFinish)
         {
             try
@@ -557,15 +439,13 @@ namespace LeagueSharp.Loader.Views
                     return;
                 }
 
-                Console.WriteLine("Checking");
-
                 this.StatusString = Utility.GetMultiLanguageText("Checking");
-                this.updateMessage = "";
+                this.updateMessage = string.Empty;
                 this.CheckingForUpdates = true;
 
                 if (loader)
                 {
-                    this.loaderVersionCheckResult = Updater.CheckLoaderVersion();
+                    var loaderVersionCheckResult = await WebService.Client.LoaderVersionAsync();
 
                     try
                     {
@@ -581,14 +461,14 @@ namespace LeagueSharp.Loader.Views
                         Environment.Exit(0);
                     }
 
-                    if (this.loaderVersionCheckResult != null && this.loaderVersionCheckResult.Item1)
+                    if (loaderVersionCheckResult.Version > Assembly.GetExecutingAssembly().GetName().Version)
                     {
-                        //Update the loader only when we are not injected to be able to replace the core files.
+                        // Update the loader only when we are not injected to be able to replace the core files.
                         if (!Injection.IsInjected)
                         {
                             Console.WriteLine("Update Loader");
                             Updater.Updating = true;
-                            await Updater.UpdateLoader(this.loaderVersionCheckResult);
+                            await Updater.UpdateLoader(loaderVersionCheckResult.Url);
                         }
                     }
                 }
@@ -644,6 +524,7 @@ namespace LeagueSharp.Loader.Views
             {
                 return;
             }
+
             var selectedAssembly = (LeagueSharpAssembly)this.InstalledAssembliesDataGrid.SelectedItems[0];
             try
             {
@@ -652,9 +533,9 @@ namespace LeagueSharp.Loader.Views
                                   + Environment.TickCount.GetHashCode().ToString("X");
                 Utility.CopyDirectory(source, destination);
                 var leagueSharpAssembly = new LeagueSharpAssembly(
-                    selectedAssembly.Name + "_clone",
-                    Path.Combine(destination, Path.GetFileName(selectedAssembly.PathToProjectFile)),
-                    "");
+                    selectedAssembly.Name + "_clone", 
+                    Path.Combine(destination, Path.GetFileName(selectedAssembly.PathToProjectFile)), 
+                    string.Empty);
                 leagueSharpAssembly.Compile();
                 this.Config.SelectedProfile.InstalledAssemblies.Add(leagueSharpAssembly);
             }
@@ -684,13 +565,18 @@ namespace LeagueSharp.Loader.Views
             await this.PrepareAssemblies(Config.Instance.SelectedProfile.InstalledAssemblies, false, true);
         }
 
+        private void ConfigOnSearchTextChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            this.UpdateFilters();
+        }
+
         private async void DeleteWithConfirmation(IEnumerable<LeagueSharpAssembly> asemblies)
         {
             var result =
                 await
                 this.ShowMessageAsync(
-                    Utility.GetMultiLanguageText("Uninstall"),
-                    Utility.GetMultiLanguageText("UninstallConfirm"),
+                    Utility.GetMultiLanguageText("Uninstall"), 
+                    Utility.GetMultiLanguageText("UninstallConfirm"), 
                     MessageDialogStyle.AffirmativeAndNegative);
 
             if (result == MessageDialogResult.Negative)
@@ -733,9 +619,115 @@ namespace LeagueSharp.Loader.Views
             }
         }
 
-        private void EditProfileMenuItem_OnClick(object sender, RoutedEventArgs e)
+        private bool FilterAssemblies(object item)
         {
-            this.ShowProfileNameChangeDialog();
+            try
+            {
+                var searchText = this.Config.SearchText.Replace("*", "(.*)");
+
+                var assembly = item as LeagueSharpAssembly;
+                if (assembly == null)
+                {
+                    return false;
+                }
+
+                if (searchText == "checked")
+                {
+                    return assembly.InjectChecked;
+                }
+
+                switch (assembly.Type)
+                {
+                    case AssemblyType.Champion:
+                        if (!this.Config.ChampionCheck)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case AssemblyType.Utility:
+                        if (!this.Config.UtilityCheck)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case AssemblyType.Library:
+                        if (!this.Config.LibraryCheck)
+                        {
+                            return false;
+                        }
+
+                        break;
+                }
+
+                var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
+                var displayNameMatch = Regex.Match(assembly.DisplayName, searchText, RegexOptions.IgnoreCase);
+                var svnNameMatch = Regex.Match(assembly.SvnUrl, searchText, RegexOptions.IgnoreCase);
+                var descNameMatch = Regex.Match(assembly.Description, searchText, RegexOptions.IgnoreCase);
+
+                return displayNameMatch.Success || nameMatch.Success || svnNameMatch.Success || descNameMatch.Success;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+        }
+
+        private bool FilterDatabaseAssemblies(object item)
+        {
+            try
+            {
+                var searchText = this.Config.SearchText.Replace("*", "(.*)");
+
+                var assembly = item as AssemblyEntry;
+                if (assembly == null)
+                {
+                    return false;
+                }
+
+                switch (assembly.Type)
+                {
+                    case AssemblyType.Champion:
+                        if (!this.Config.ChampionCheck)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case AssemblyType.Utility:
+                        if (!this.Config.UtilityCheck)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    case AssemblyType.Library:
+                        if (!this.Config.LibraryCheck)
+                        {
+                            return false;
+                        }
+
+                        break;
+                }
+
+                var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
+                var champeMatch = assembly.Type == AssemblyType.Champion
+                                  && Regex.Match(string.Join(", ", assembly.Champions), searchText, RegexOptions.IgnoreCase).Success;
+                var authorMatch = Regex.Match(assembly.AuthorName, searchText, RegexOptions.IgnoreCase);
+                var svnNameMatch = Regex.Match(assembly.GithubUrl, searchText, RegexOptions.IgnoreCase);
+                var descNameMatch = Regex.Match(assembly.Description, searchText, RegexOptions.IgnoreCase);
+
+                return authorMatch.Success || champeMatch || nameMatch.Success || svnNameMatch.Success || descNameMatch.Success;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
         }
 
         private TChildItem FindVisualChild<TChildItem>(DependencyObject obj) where TChildItem : DependencyObject
@@ -743,7 +735,7 @@ namespace LeagueSharp.Loader.Views
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is TChildItem)
+                if (child is TChildItem)
                 {
                     return (TChildItem)child;
                 }
@@ -756,17 +748,13 @@ namespace LeagueSharp.Loader.Views
                     }
                 }
             }
+
             return null;
         }
 
         private DataGridCell GetCell(DataGridRow row, int columnIndex = 0)
         {
-            if (row == null)
-            {
-                return null;
-            }
-
-            var presenterE = row.FindChildren<DataGridCellsPresenter>(true);
+            var presenterE = row?.FindChildren<DataGridCellsPresenter>(true);
             if (presenterE == null)
             {
                 return null;
@@ -802,6 +790,7 @@ namespace LeagueSharp.Loader.Views
                     }
                 }
             }
+
             return curIndex;
         }
 
@@ -818,6 +807,7 @@ namespace LeagueSharp.Loader.Views
             {
                 return null;
             }
+
             return this.InstalledAssembliesDataGrid.ItemContainerGenerator.ContainerFromIndex(index) as DataGridRow;
         }
 
@@ -827,8 +817,9 @@ namespace LeagueSharp.Loader.Views
             {
                 return;
             }
+
             var selectedAssembly = (LeagueSharpAssembly)this.InstalledAssembliesDataGrid.SelectedItems[0];
-            if (selectedAssembly.SvnUrl != "")
+            if (selectedAssembly.SvnUrl != string.Empty)
             {
                 var window = new InstallerWindow { Owner = this };
                 window.ShowProgress(selectedAssembly.SvnUrl, true);
@@ -842,8 +833,9 @@ namespace LeagueSharp.Loader.Views
             {
                 return;
             }
+
             var selectedAssembly = (LeagueSharpAssembly)this.InstalledAssembliesDataGrid.SelectedItems[0];
-            if (selectedAssembly.SvnUrl != "")
+            if (selectedAssembly.SvnUrl != string.Empty)
             {
                 Process.Start(selectedAssembly.SvnUrl);
             }
@@ -851,6 +843,60 @@ namespace LeagueSharp.Loader.Views
             {
                 Process.Start(Path.GetDirectoryName(selectedAssembly.PathToProjectFile));
             }
+        }
+
+        private void InitSystem()
+        {
+            PathRandomizer.CopyFiles();
+            Remoting.Init();
+
+            this.InjectThread = new Thread(
+                () =>
+                {
+                    var trigger = new EdgeTrigger();
+
+                    trigger.Rising += (sender, args) =>
+                    {
+                        Application.Current.Dispatcher.InvokeAsync(
+                            () =>
+                            {
+                                this.icon_connected.Visibility = Visibility.Visible;
+                                this.icon_disconnected.Visibility = Visibility.Collapsed;
+                            });
+                    };
+
+                    trigger.Falling += (sender, args) =>
+                    {
+                        Application.Current.Dispatcher.InvokeAsync(
+                            async () =>
+                            {
+                                await this.UpdateAccount();
+                                this.icon_connected.Visibility = Visibility.Collapsed;
+                                this.icon_disconnected.Visibility = Visibility.Visible;
+                            });
+                    };
+
+                    while (true)
+                    {
+                        try
+                        {
+                            Thread.Sleep(3000);
+
+                            if (Config.Instance.Install)
+                            {
+                                Injection.Pulse();
+                                trigger.Value = Injection.IsInjected;
+                            }
+                        }
+                        catch
+                        {
+                            // ignored - A task was canceled.
+                        }
+                    }
+                });
+
+            this.InjectThread.SetApartmentState(ApartmentState.STA);
+            this.InjectThread.Start();
         }
 
         private void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -865,15 +911,18 @@ namespace LeagueSharp.Loader.Views
             {
                 return;
             }
+
             var index = this.GetCurrentRowIndex(e.GetPosition);
             if (index < 0)
             {
                 return;
             }
+
             if (index == this.rowIndex)
             {
                 return;
             }
+
             var changedAssembly = this.Config.SelectedProfile.InstalledAssemblies[this.rowIndex];
             this.Config.SelectedProfile.InstalledAssemblies.RemoveAt(this.rowIndex);
             this.Config.SelectedProfile.InstalledAssemblies.Insert(index, changedAssembly);
@@ -915,14 +964,16 @@ namespace LeagueSharp.Loader.Views
             var verticalPos = e.GetPosition(container).Y;
             double offset = 1;
 
-            if (verticalPos < tolerance) // Top visible? 
+            if (verticalPos < tolerance)
             {
-                //Scroll up
+                // Top visible? 
+                // Scroll up
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - offset);
             }
-            else if (verticalPos > container.ActualHeight - tolerance) //Bot visible? 
+            else if (verticalPos > container.ActualHeight - tolerance)
             {
-                //Scroll down
+                // Bot visible? 
+                // Scroll down
                 scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset + offset);
             }
         }
@@ -934,10 +985,12 @@ namespace LeagueSharp.Loader.Views
             {
                 return;
             }
+
             if (this.IsColumnSelected(e))
             {
                 return;
             }
+
             this.InstalledAssembliesDataGrid.SelectedIndex = this.rowIndex;
             var selectedAssembly = this.InstalledAssembliesDataGrid.Items[this.rowIndex] as LeagueSharpAssembly;
             if (selectedAssembly == null)
@@ -951,6 +1004,25 @@ namespace LeagueSharp.Loader.Views
             }
         }
 
+        private async void InstallFromDbItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (this.AssembliesDBDataGrid.SelectedItems.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var result in this.AssembliesDBDataGrid.SelectedItems.Cast<AssemblyEntry>())
+            {
+                if (this.Config.SelectedProfile.InstalledAssemblies.Any(a => a.Name == result.Name.WebDecode()))
+                {
+                    await this.ShowMessageAsync("Installer", $"{result.Name} is already installed");
+                    continue;
+                }
+
+                await InstallerWindow.InstallAssembly(result, false);
+            }
+        }
+
         private bool IsColumnSelected(MouseEventArgs e)
         {
             var dep = (DependencyObject)e.OriginalSource;
@@ -958,10 +1030,12 @@ namespace LeagueSharp.Loader.Views
             {
                 dep = VisualTreeHelper.GetParent(dep);
             }
+
             if (dep is DataGridColumnHeader)
             {
                 return true;
             }
+
             return false;
         }
 
@@ -974,7 +1048,7 @@ namespace LeagueSharp.Loader.Views
 
             var selectedAssembly = (LeagueSharpAssembly)this.InstalledAssembliesDataGrid.SelectedItems[0];
             var logFile = Path.Combine(
-                Directories.LogsDir,
+                Directories.LogsDir, 
                 "Error - " + Path.GetFileName(selectedAssembly.Name + ".txt"));
             if (File.Exists(logFile))
             {
@@ -993,11 +1067,11 @@ namespace LeagueSharp.Loader.Views
                 var text = Clipboard.GetText();
                 if (text.StartsWith(LSUriScheme.FullName))
                 {
-                    Clipboard.SetText("");
+                    Clipboard.SetText(string.Empty);
                     await LSUriScheme.HandleUrl(text, this);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Utility.Log(LogStatus.Error, "Clipboard", ex.Message, Logs.MainLog);
             }
@@ -1015,16 +1089,14 @@ namespace LeagueSharp.Loader.Views
             this.ShowNewAssemblyDialog();
         }
 
-        private void NewProfileMenuItem_OnClick(object sender, RoutedEventArgs e)
+        private void NewsButton_OnClick(object sender, RoutedEventArgs e)
         {
-            Config.Instance.Profiles.Add(
-                new Profile
-                    {
-                        InstalledAssemblies = new ObservableCollection<LeagueSharpAssembly>(),
-                        Name = Utility.GetMultiLanguageText("NewProfile2")
-                    });
+            this.TosBrowser.Visibility = Visibility.Hidden;
 
-            Config.Instance.SelectedProfile = Config.Instance.Profiles.Last();
+            this.Browser.Navigate($"{this.BaseUrl}/loader/news/1/html");
+            this.MainTabControl.SelectedIndex = TAB_NEWS;
+
+            this.Browser.Visibility = Visibility.Visible;
         }
 
         private void OnLogin(string username)
@@ -1032,81 +1104,6 @@ namespace LeagueSharp.Loader.Views
             Utility.Log(LogStatus.Ok, "Login", $"Succesfully signed in as {username}", Logs.MainLog);
             this.Browser.Visibility = Visibility.Visible;
             this.TosBrowser.Visibility = Visibility.Visible;
-        }
-
-        private void InitSystem()
-        {
-            PathRandomizer.CopyFiles();
-            Remoting.Init();
-
-            this.InjectThread = new Thread(
-                () =>
-                {
-                    var trigger = new EdgeTrigger();
-
-                    trigger.Rising += (sender, args) =>
-                    {
-                        Application.Current.Dispatcher.InvokeAsync(
-                            () =>
-                            {
-                                this.icon_connected.Visibility = Visibility.Visible;
-                                this.icon_disconnected.Visibility = Visibility.Collapsed;
-                            });
-                    };
-
-                    trigger.Falling += (sender, args) =>
-                    {
-                        this.UpdateAccount();
-
-                        Application.Current.Dispatcher.InvokeAsync(
-                            () =>
-                            {
-                                this.icon_connected.Visibility = Visibility.Collapsed;
-                                this.icon_disconnected.Visibility = Visibility.Visible;
-                            });
-                    };
-
-                    while (true)
-                    {
-                        Thread.Sleep(3000);
-
-                        try
-                        {
-                            if (Config.Instance.Install)
-                            {
-                                Injection.Pulse();
-                                trigger.Value = Injection.IsInjected;
-                            }
-                        }
-                        catch
-                        {
-                            // ignored - A task was canceled.
-                        }
-                    }
-                });
-
-            this.InjectThread.SetApartmentState(ApartmentState.STA);
-            this.InjectThread.Start();
-        }
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void ProfilesButton_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            this.ShowProfileNameChangeDialog();
-        }
-
-        private void ProfilesButton_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count <= 0 || e.RemovedItems.Count <= 0)
-            {
-                return;
-            }
-
-            this.TextBoxBase_OnTextChanged(null, null);
         }
 
         private void RemoveMenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -1118,20 +1115,6 @@ namespace LeagueSharp.Loader.Views
 
             var remove = this.InstalledAssembliesDataGrid.SelectedItems.Cast<LeagueSharpAssembly>().ToList();
             this.DeleteWithConfirmation(remove);
-        }
-
-        private void RemoveProfileMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (Config.Instance.Profiles.Count > 1)
-            {
-                Config.Instance.Profiles.Remove(Config.SelectedProfile);
-                Config.Instance.SelectedProfile = Config.Instance.Profiles.First();
-            }
-            else
-            {
-                Config.Instance.SelectedProfile.InstalledAssemblies = new ObservableCollection<LeagueSharpAssembly>();
-                Config.Instance.SelectedProfile.Name = Utility.GetMultiLanguageText("DefaultProfile");
-            }
         }
 
         private void SetForeground()
@@ -1149,7 +1132,13 @@ namespace LeagueSharp.Loader.Views
             this.Focus();
         }
 
+        private void SettingsButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            this.Browser.Visibility = Visibility.Hidden;
+            this.TosBrowser.Visibility = Visibility.Hidden;
 
+            this.MainTabControl.SelectedIndex = TAB_SETTINGS;
+        }
 
         private void ShareItem_OnClick(object sender, RoutedEventArgs e)
         {
@@ -1158,16 +1147,16 @@ namespace LeagueSharp.Loader.Views
                 return;
             }
 
-            var stringToAppend = "";
+            var stringToAppend = string.Empty;
             var count = 0;
             foreach (var selectedAssembly in this.InstalledAssembliesDataGrid.SelectedItems.Cast<LeagueSharpAssembly>())
             {
                 if (selectedAssembly.SvnUrl.StartsWith(
-                    "https://github.com",
+                    "https://github.com", 
                     StringComparison.InvariantCultureIgnoreCase))
                 {
                     var user = selectedAssembly.SvnUrl.Remove(0, 19);
-                    stringToAppend += string.Format("{0}/{1}/", user, selectedAssembly.Name);
+                    stringToAppend += $"{user}/{selectedAssembly.Name}/";
                     count++;
                 }
             }
@@ -1177,14 +1166,9 @@ namespace LeagueSharp.Loader.Views
                 var uri = LSUriScheme.FullName + (count == 1 ? "project" : "projectGroup") + "/" + stringToAppend;
                 Clipboard.SetText(uri);
                 this.ShowTextMessage(
-                    Utility.GetMultiLanguageText("MenuShare"),
+                    Utility.GetMultiLanguageText("MenuShare"), 
                     Utility.GetMultiLanguageText("ShareText"));
             }
-        }
-
-        private async Task ShowAfterLoginDialog(string message, bool showLoginDialog)
-        {
-
         }
 
         private async Task ShowLoginDialog()
@@ -1195,14 +1179,14 @@ namespace LeagueSharp.Loader.Views
             {
                 var result =
                     await
-                        this.ShowLoginAsync(
-                            "LeagueSharp",
-                            "Sign in",
-                            new LoginDialogSettings
-                            {
-                                ColorScheme = this.MetroDialogOptions.ColorScheme,
-                                NegativeButtonVisibility = Visibility.Visible
-                            });
+                    this.ShowLoginAsync(
+                        "LeagueSharp", 
+                        "Sign in", 
+                        new LoginDialogSettings
+                        {
+                            ColorScheme = this.MetroDialogOptions.ColorScheme, 
+                            NegativeButtonVisibility = Visibility.Visible
+                        });
 
                 if (result == null)
                 {
@@ -1215,7 +1199,7 @@ namespace LeagueSharp.Loader.Views
 
                 if (loginResult.Item1)
                 {
-                    //Save the login credentials
+                    // Save the login credentials
                     Config.Instance.Username = result.Username;
                     Config.Instance.Password = Auth.Hash(result.Password);
 
@@ -1226,12 +1210,12 @@ namespace LeagueSharp.Loader.Views
                 await this.ShowMessageAsync("Login", string.Format(Utility.GetMultiLanguageText("FailedToLogin"), loginResult.Item2));
 
                 Utility.Log(
-                    LogStatus.Error,
-                    Utility.GetMultiLanguageText("Login"),
+                    LogStatus.Error, 
+                    Utility.GetMultiLanguageText("Login"), 
                     string.Format(
-                        Utility.GetMultiLanguageText("LoginError"),
-                        result.Username,
-                        loginResult.Item2),
+                        Utility.GetMultiLanguageText("LoginError"), 
+                        result.Username, 
+                        loginResult.Item2), 
                     Logs.MainLog);
             }
         }
@@ -1242,7 +1226,7 @@ namespace LeagueSharp.Loader.Views
 
             if (assemblyName != null)
             {
-                assemblyName = Regex.Replace(assemblyName, @"[^A-Za-z0-9]+", "");
+                assemblyName = Regex.Replace(assemblyName, @"[^A-Za-z0-9]+", string.Empty);
             }
 
             if (!string.IsNullOrEmpty(assemblyName))
@@ -1256,52 +1240,37 @@ namespace LeagueSharp.Loader.Views
             }
         }
 
-        private async void ShowProfileNameChangeDialog()
+        private async void StatusButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var result =
-                await
-                this.ShowInputAsync(
-                    Utility.GetMultiLanguageText("Rename"),
-                    Utility.GetMultiLanguageText("RenameText"),
-                    new MetroDialogSettings { DefaultText = Config.Instance.SelectedProfile.Name, });
+            this.Browser.Visibility = Visibility.Hidden;
+            this.TosBrowser.Visibility = Visibility.Hidden;
 
-            if (!string.IsNullOrEmpty(result))
-            {
-                Config.Instance.SelectedProfile.Name = result;
-            }
+            await this.UpdateAccount();
+            await this.CheckForUpdates(true, true, true);
         }
 
-
-
-        private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
+        private void TosAccept_Click(object sender, RoutedEventArgs e)
         {
-            var searchText = this.SearchTextBox.Text;
-            var view = CollectionViewSource.GetDefaultView(Config.Instance.SelectedProfile.InstalledAssemblies);
-            searchText = searchText.Replace("*", "(.*)");
-            view.Filter = obj =>
-                {
-                    try
-                    {
-                        var assembly = obj as LeagueSharpAssembly;
+            Config.Instance.TosAccepted = true;
 
-                        if (searchText == "checked")
-                        {
-                            return assembly.InjectChecked;
-                        }
+            this.RightWindowCommands.Visibility = Visibility.Visible;
+            this.NewsButton_OnClick(null, null);
+        }
 
-                        var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
-                        var displayNameMatch = Regex.Match(assembly.DisplayName, searchText, RegexOptions.IgnoreCase);
-                        var svnNameMatch = Regex.Match(assembly.SvnUrl, searchText, RegexOptions.IgnoreCase);
-                        var descNameMatch = Regex.Match(assembly.Description, searchText, RegexOptions.IgnoreCase);
+        private void TosButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            this.Browser.Visibility = Visibility.Hidden;
 
-                        return displayNameMatch.Success || nameMatch.Success || svnNameMatch.Success
-                               || descNameMatch.Success;
-                    }
-                    catch (Exception)
-                    {
-                        return true;
-                    }
-                };
+            this.TosBrowser.Navigate($"{this.BaseUrl}/loader/tos/1");
+            this.MainTabControl.SelectedIndex = TAB_TOS;
+
+            this.TosBrowser.Visibility = Visibility.Visible;
+        }
+
+        private void TosDecline_Click(object sender, RoutedEventArgs e)
+        {
+            this.MainWindow_OnClosing(null, null);
+            Environment.Exit(0);
         }
 
         private void TrayIcon_OnTrayLeftMouseUp(object sender, RoutedEventArgs e)
@@ -1344,7 +1313,57 @@ namespace LeagueSharp.Loader.Views
         private void TreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             var name = ((TreeViewItem)((TreeView)sender).SelectedItem).Uid;
-            this.SettingsFrame.Content = Activator.CreateInstance(null, "LeagueSharp.Loader.Views.Settings." + name).Unwrap();
+            var viewType = Type.GetType($"LeagueSharp.Loader.Views.Settings.{name}");
+
+            if (viewType == null)
+            {
+                Utility.Log(
+                    LogStatus.Error, 
+                    "TreeView_OnSelectedItemChanged", 
+                    $"Could not find Settings View (LeagueSharp.Loader.Views.Settings.{name})", 
+                    Logs.MainLog);
+                return;
+            }
+
+            this.SettingsFrame.Content = Activator.CreateInstance(viewType);
+        }
+
+        private async Task UpdateAccount()
+        {
+            try
+            {
+                if (DateTime.Now - this.LastAccountUpdate < TimeSpan.FromMinutes(10))
+                {
+                    return;
+                }
+
+                this.LastAccountUpdate = DateTime.Now;
+
+                var account = await WebService.Client.AccountAsync();
+                var text = "Normal";
+
+                if (account.IsSubscriber)
+                {
+                    text = "Sub";
+                }
+
+                if (account.IsBotter)
+                {
+                    text = "Bot";
+                }
+
+                if (account.IsDev)
+                {
+                    text = "Dev";
+                }
+
+                this.Header.Text =
+                    $"L# - {account.DisplayName}/{text} - {account.GamesPlayed}/{account.MaxGames} - {Assembly.GetExecutingAssembly().GetName().Version}";
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private async void UpdateAll_OnClick(object sender, RoutedEventArgs e)
@@ -1372,58 +1391,27 @@ namespace LeagueSharp.Loader.Views
             await this.PrepareAssemblies(this.InstalledAssembliesDataGrid.SelectedItems.Cast<LeagueSharpAssembly>(), true, true);
         }
 
-        private async void InstallFromDbItem_OnClick(object sender, RoutedEventArgs e)
+        private void UpdateFilters()
         {
-            if (this.AssembliesDBDataGrid.SelectedItems.Count == 0)
+            if (!this.Dispatcher.CheckAccess())
             {
                 return;
             }
 
-            foreach (var result in this.AssembliesDBDataGrid.SelectedItems.Cast<AssemblyEntry>())
+            ICollectionView view = null;
+
+            switch (this.MainTabControl.SelectedIndex)
             {
-                if (this.Config.SelectedProfile.InstalledAssemblies.Any(a => a.Name == result.Name.WebDecode()))
-                {
-                    await this.ShowMessageAsync("Installer", $"{result.Name} is already installed");
-                    continue;
-                }
+                case TAB_ASSEMBLIES:
+                    view = CollectionViewSource.GetDefaultView(Config.Instance.SelectedProfile.InstalledAssemblies);
+                    view.Filter = this.FilterAssemblies;
+                    break;
 
-                await InstallerWindow.InstallAssembly(result, false);
-                //await Application.Current.Dispatcher.InvokeAsync(() => InstallerWindow.InstallAssembly(result, false));
+                case TAB_DATABASE:
+                    view = CollectionViewSource.GetDefaultView(Config.Instance.DatabaseAssemblies);
+                    view.Filter = this.FilterDatabaseAssemblies;
+                    break;
             }
-        }
-
-        private void DBTextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
-        {
-            var searchText = this.DBSearchTextBox.Text.Replace("*", "(.*)");
-            var view = CollectionViewSource.GetDefaultView(Config.Instance.DatabaseAssemblies);
-            if (view == null)
-            {
-                return;
-            }
-
-            view.Filter = obj =>
-                {
-                    try
-                    {
-                        var assembly = obj as AssemblyEntry;
-                        if (assembly == null)
-                        {
-                            return false;
-                        }
-
-                        var nameMatch = Regex.Match(assembly.Name, searchText, RegexOptions.IgnoreCase);
-                        var champeMatch = assembly.Type == AssemblyType.Champion && Regex.Match(string.Join(", ", assembly.Champions), searchText, RegexOptions.IgnoreCase).Success;
-                        var authorMatch = Regex.Match(assembly.AuthorName, searchText, RegexOptions.IgnoreCase);
-                        var svnNameMatch = Regex.Match(assembly.GithubUrl, searchText, RegexOptions.IgnoreCase);
-                        var descNameMatch = Regex.Match(assembly.Description, searchText, RegexOptions.IgnoreCase);
-
-                        return authorMatch.Success || champeMatch || nameMatch.Success || svnNameMatch.Success || descNameMatch.Success;
-                    }
-                    catch (Exception)
-                    {
-                        return true;
-                    }
-                };
         }
     }
 }

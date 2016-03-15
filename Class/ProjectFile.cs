@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// ProjectFile.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ProjectFile.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     using System;
@@ -30,9 +15,9 @@ namespace LeagueSharp.Loader.Class
     [Serializable]
     internal class ProjectFile
     {
-        private readonly Log log;
-
         public readonly Project Project;
+
+        private readonly Log log;
 
         public ProjectFile(string file, Log log)
         {

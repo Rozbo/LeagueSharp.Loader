@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// Directories.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Directories.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Data
 {
     using System;
@@ -26,16 +11,9 @@ namespace LeagueSharp.Loader.Data
 
     public static class Directories
     {
-        static Directories()
-        {
-            Directory.CreateDirectory(AssembliesDir);
-            Directory.CreateDirectory(RepositoryDir);
-            Directory.CreateDirectory(LogsDir);
-        }
-
         public static readonly string AppDataDirectory =
             Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
                 "LS" + Environment.UserName.GetHashCode().ToString("X")) + "\\";
 
         public static readonly string AssembliesDir = Path.Combine(AppDataDirectory, "1") + "\\";
@@ -48,12 +26,12 @@ namespace LeagueSharp.Loader.Data
 
         public static readonly string ConfigFilePath = Path.Combine(CurrentDirectory, "config.xml");
 
-        public static readonly string CoreFilePath = Path.Combine(CoreDirectory, "Leaguesharp.Core.dll");
-
         public static readonly string CoreBridgeFilePath = Path.Combine(CoreDirectory, "Leaguesharp.dll");
 
+        public static readonly string CoreFilePath = Path.Combine(CoreDirectory, "Leaguesharp.Core.dll");
+
         public static readonly string LoaderFilePath = Path.Combine(
-            CurrentDirectory,
+            CurrentDirectory, 
             Process.GetCurrentProcess().ProcessName);
 
         public static readonly string LocalRepoDir = Path.Combine(CurrentDirectory, "LocalAssemblies") + "\\";
@@ -64,9 +42,16 @@ namespace LeagueSharp.Loader.Data
 
         public static readonly string SandboxFilePath = Path.Combine(CoreDirectory, "LeagueSharp.Sandbox.dll");
 
-        public static string AssemblyFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe");
+        static Directories()
+        {
+            Directory.CreateDirectory(AssembliesDir);
+            Directory.CreateDirectory(RepositoryDir);
+            Directory.CreateDirectory(LogsDir);
+        }
 
         public static string AssemblyConfigFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe.config");
+
+        public static string AssemblyFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe");
 
         public static string AssemblyPdbFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.pdb");
     }

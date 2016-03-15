@@ -1,3 +1,8 @@
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="EdgeTrigger.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace PlaySharp.Toolkit.Helper
 {
     using System;
@@ -6,11 +11,15 @@ namespace PlaySharp.Toolkit.Helper
     [SecuritySafeCritical]
     public class EdgeTrigger
     {
-        public event EventHandler Falling;
-        public event EventHandler Fallen;
-        public event EventHandler Rising;
-        public event EventHandler Risen;
         private bool value;
+
+        public event EventHandler Fallen;
+
+        public event EventHandler Falling;
+
+        public event EventHandler Risen;
+
+        public event EventHandler Rising;
 
         public bool Value
         {
@@ -41,8 +50,6 @@ namespace PlaySharp.Toolkit.Helper
                     this.value = false;
                     this.Fallen?.Invoke(this, EventArgs.Empty);
                 }
-
-                this.value = value;
             }
         }
     }

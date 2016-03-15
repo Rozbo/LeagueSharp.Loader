@@ -1,23 +1,8 @@
-#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// General.xaml.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="General.xaml.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Views.Settings
 {
     using System;
@@ -27,44 +12,43 @@ namespace LeagueSharp.Loader.Views.Settings
     using System.Windows.Controls;
     using System.Windows.Input;
 
-    using LeagueSharp.Loader.Class;
     using LeagueSharp.Loader.Data;
 
     using MahApps.Metro;
 
     public partial class General
     {
+        private readonly string[] _accentColors =
+        {
+            "Red", 
+            "Green", 
+            "Blue", 
+            "Purple", 
+            "Orange", 
+            "Lime", 
+            "Emerald", 
+            "Teal", 
+            "Cyan", 
+            "Cobalt", 
+            "Indigo", 
+            "Violet", 
+            "Pink", 
+            "Magenta", 
+            "Crimson", 
+            "Amber", 
+            "Yellow", 
+            "Brown", 
+            "Olive", 
+            "Steel", 
+            "Mauve", 
+            "Taupe", 
+            "Sienna"
+        };
+
         public General()
         {
             this.InitializeComponent();
         }
-
-        private readonly string[] _accentColors =
-            {
-                "Red",
-                "Green",
-                "Blue",
-                "Purple",
-                "Orange",
-                "Lime",
-                "Emerald",
-                "Teal",
-                "Cyan",
-                "Cobalt",
-                "Indigo",
-                "Violet",
-                "Pink",
-                "Magenta",
-                "Crimson",
-                "Amber",
-                "Yellow",
-                "Brown",
-                "Olive",
-                "Steel",
-                "Mauve",
-                "Taupe",
-                "Sienna"
-            };
 
         private void AppData_OnClick(object sender, RoutedEventArgs e)
         {
@@ -98,8 +82,8 @@ namespace LeagueSharp.Loader.Views.Settings
             if (this._accentColors.Contains(color))
             {
                 ThemeManager.ChangeAppStyle(
-                    Application.Current,
-                    ThemeManager.GetAccent(color),
+                    Application.Current, 
+                    ThemeManager.GetAccent(color), 
                     ThemeManager.GetAppTheme("BaseLight"));
                 Config.Instance.SelectedColor = color;
             }
@@ -140,7 +124,7 @@ namespace LeagueSharp.Loader.Views.Settings
                 senderBox.SelectedItem = senderBox.Items.Cast<string>().FirstOrDefault(item => item == Config.Instance.SelectedLanguage);
             }
 
-            //English as default
+            // English as default
             if (senderBox.SelectedIndex == -1)
             {
                 senderBox.SelectedIndex = senderBox.Items.IndexOf("English");
@@ -180,8 +164,8 @@ namespace LeagueSharp.Loader.Views.Settings
 
         private void Logout_OnClick(object sender, RoutedEventArgs e)
         {
-            Config.Instance.Username = "";
-            Config.Instance.Password = "";
+            Config.Instance.Username = string.Empty;
+            Config.Instance.Password = string.Empty;
             ((MainWindow)this.DataContext).MainWindow_OnClosing(null, null);
 
             Process.Start(Application.ResourceAssembly.Location);

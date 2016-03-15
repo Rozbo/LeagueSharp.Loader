@@ -10,7 +10,7 @@
     <system:String x:Key="News">新闻</system:String>
     <system:String x:Key="Assemblies">脚本</system:String>
     <system:String x:Key="AssemblyDB">脚本数据库</system:String>
-  
+
     <!-- MainWindow Profile selector -->
     <system:String x:Key="DefaultProfile">默认</system:String>
 

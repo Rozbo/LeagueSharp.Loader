@@ -1,28 +1,12 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// FolderSelectDialog.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
- // ------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="FolderSelectDialog.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------
 // Wraps System.Windows.Forms.OpenFileDialog to make it present
 // a vista-style dialog.
 // ------------------------------------------------------------------
-
 namespace LeagueSharp.Loader.Class
 {
     using System;
@@ -34,6 +18,9 @@ namespace LeagueSharp.Loader.Class
     /// </summary>
     public class FolderSelectDialog
     {
+        // Wrapped dialog
+        private OpenFileDialog ofd = null;
+
         /// <summary>
         ///     Default constructor
         /// </summary>
@@ -47,9 +34,6 @@ namespace LeagueSharp.Loader.Class
             this.ofd.DereferenceLinks = true;
             this.ofd.Multiselect = false;
         }
-
-        // Wrapped dialog
-        private OpenFileDialog ofd = null;
 
         /// <summary>
         ///     Gets the selected folder
@@ -71,6 +55,7 @@ namespace LeagueSharp.Loader.Class
             {
                 return this.ofd.InitialDirectory;
             }
+
             set
             {
                 this.ofd.InitialDirectory = value == null || value.Length == 0 ? Environment.CurrentDirectory : value;
@@ -86,6 +71,7 @@ namespace LeagueSharp.Loader.Class
             {
                 return this.ofd.Title;
             }
+
             set
             {
                 this.ofd.Title = value == null ? "Select a folder" : value;
@@ -124,7 +110,7 @@ namespace LeagueSharp.Loader.Class
                 r.CallAs(typeIFileDialog, dialog, "SetOptions", options);
 
                 var pfde = r.New("FileDialog.VistaDialogEvents", this.ofd);
-                var parameters = new object[] { pfde, num };
+                var parameters = new[] { pfde, num };
                 r.CallAs2(typeIFileDialog, dialog, "Advise", parameters);
                 num = (uint)parameters[1];
                 try
@@ -148,6 +134,7 @@ namespace LeagueSharp.Loader.Class
                 {
                     return false;
                 }
+
                 this.ofd.FileName = fbd.SelectedPath;
                 flag = true;
             }
@@ -161,6 +148,8 @@ namespace LeagueSharp.Loader.Class
     /// </summary>
     public class WindowWrapper : IWin32Window
     {
+        private IntPtr _hwnd;
+
         /// <summary>
         ///     Constructor
         /// </summary>
@@ -169,8 +158,6 @@ namespace LeagueSharp.Loader.Class
         {
             this._hwnd = handle;
         }
-
-        private IntPtr _hwnd;
 
         /// <summary>
         ///     Original ptr

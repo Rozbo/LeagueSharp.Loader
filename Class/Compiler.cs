@@ -1,40 +1,32 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// Compiler.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Compiler.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     #region
 
     using System;
+    using System.Collections.Generic;
     using System.IO;
 
     using LeagueSharp.Loader.Data;
 
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Logging;
-    using System.Collections.Generic;
+
     #endregion
 
     internal class Compiler
     {
-        private static List<string> ItemsTypeBlackList = new List<string> { "PreBuildEvent", "PostBuildEvent", "PreLinkEvent", "CustomBuildStep" };
+        private static readonly List<string> ItemsTypeBlackList = new List<string>
+                                                                  {
+                                                                      "PreBuildEvent", 
+                                                                      "PostBuildEvent", 
+                                                                      "PreLinkEvent", 
+                                                                      "CustomBuildStep"
+                                                                  };
 
         public static bool Compile(Project project, string logfile, Log log)
         {
@@ -42,12 +34,35 @@ namespace LeagueSharp.Loader.Class
             {
                 if (project != null)
                 {
+                    foreach (var item in project.Items)
+                    {
+                        try
+                        {
+                            if (ItemsTypeBlackList.FindIndex(listItem => listItem.Equals(item.ItemType, StringComparison.InvariantCultureIgnoreCase))
+                                >= 0)
+                            {
+                                Utility.Log(
+                                    LogStatus.Error, 
+                                    "Compiler", 
+                                    $"Compile - Blacklisted item type detected - {project.FullPath}", 
+                                    log);
+
+                                return false;
+                            }
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                    }
+
                     var doLog = false;
                     var logErrorFile = Path.Combine(Directories.LogsDir, "Error - " + Path.GetFileName(logfile));
                     if (File.Exists(logErrorFile))
                     {
                         File.Delete(logErrorFile);
                     }
+
                     if (!string.IsNullOrWhiteSpace(logfile))
                     {
                         var logDir = Path.GetDirectoryName(logfile);
@@ -58,28 +73,9 @@ namespace LeagueSharp.Loader.Class
                             {
                                 Directory.CreateDirectory(logDir);
                             }
+
                             var fileLogger = new FileLogger { Parameters = @"logfile=" + logfile, ShowSummary = true };
                             ProjectCollection.GlobalProjectCollection.RegisterLogger(fileLogger);
-                        }
-                    }
-                    
-                    foreach (var item in project.Items)
-                    {
-                        try
-                        {
-                            if (ItemsTypeBlackList.FindIndex(listItem => listItem.Equals(item.ItemType, StringComparison.InvariantCultureIgnoreCase)) >= 0)
-                            {
-                                Utility.Log(
-                                    LogStatus.Error,
-                                    "Compiler",
-                                    $"Compile - Blacklisted item type detected - {project.FullPath}",
-                                    log);
-
-                                return false;
-                            }
-                        }
-                        catch (Exception)
-                        {
                         }
                     }
 
@@ -87,11 +83,11 @@ namespace LeagueSharp.Loader.Class
                     ProjectCollection.GlobalProjectCollection.UnregisterAllLoggers();
                     ProjectCollection.GlobalProjectCollection.UnloadAllProjects();
                     Utility.Log(
-                        result ? LogStatus.Ok : LogStatus.Error,
-                        "Compiler",
+                        result ? LogStatus.Ok : LogStatus.Error, 
+                        "Compiler", 
                         result
                             ? $"Compile - {project.FullPath}"
-                            : $"Compile - Check ./logs/ for details - {project.FullPath}",
+                            : $"Compile - Check ./logs/ for details - {project.FullPath}", 
                         log);
 
                     if (!result && doLog && File.Exists(logfile))
@@ -100,14 +96,15 @@ namespace LeagueSharp.Loader.Class
                         if (!string.IsNullOrWhiteSpace(pathDir))
                         {
                             File.Move(
-                                logfile,
-                                Path.Combine(Directories.LogsDir, ("Error - " + Path.GetFileName(logfile))));
+                                logfile, 
+                                Path.Combine(Directories.LogsDir, "Error - " + Path.GetFileName(logfile)));
                         }
                     }
                     else if (result && File.Exists(logfile))
                     {
                         File.Delete(logfile);
                     }
+
                     return result;
                 }
             }
@@ -115,6 +112,7 @@ namespace LeagueSharp.Loader.Class
             {
                 Utility.Log(LogStatus.Error, "Compiler", ex.Message, log);
             }
+
             return false;
         }
 
@@ -131,11 +129,12 @@ namespace LeagueSharp.Loader.Class
                 if (!string.IsNullOrWhiteSpace(extension) && !string.IsNullOrWhiteSpace(pathDir))
                 {
                     return Path.Combine(
-                        pathDir,
-                        project.GetPropertyValue("OutputPath"),
-                        (project.GetPropertyValue("AssemblyName") + extension));
+                        pathDir, 
+                        project.GetPropertyValue("OutputPath"), 
+                        project.GetPropertyValue("AssemblyName") + extension);
                 }
             }
+
             return string.Empty;
         }
     }

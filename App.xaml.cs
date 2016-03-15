@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// App.xaml.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="App.xaml.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader
 {
     using System;
@@ -29,7 +14,6 @@ namespace LeagueSharp.Loader
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Threading;
-    using System.Threading.Tasks;
     using System.Windows;
 
     using LeagueSharp.Loader.Class;
@@ -39,9 +23,9 @@ namespace LeagueSharp.Loader
 
     public partial class App
     {
-        private Mutex mutex;
-
         private bool createdNew;
+
+        private Mutex mutex;
 
         public static string[] Args { get; set; }
 
@@ -55,7 +39,7 @@ namespace LeagueSharp.Loader
             this.mutex = new Mutex(true, Utility.Md5Hash(Environment.UserName), out this.createdNew);
             Args = e.Args;
 
-            #region Remove the old loader
+            
 
             try
             {
@@ -68,10 +52,10 @@ namespace LeagueSharp.Loader
             }
             catch
             {
-                //ignore
+                // ignore
             }
 
-            #endregion
+            
 
             this.ConfigInit();
             this.AppDataRandomization();
@@ -98,7 +82,7 @@ namespace LeagueSharp.Loader
 
         private void AppDataRandomization()
         {
-            #region AppData randomization
+            
 
             try
             {
@@ -107,7 +91,7 @@ namespace LeagueSharp.Loader
                     Directory.CreateDirectory(Directories.AppDataDirectory);
 
                     var oldPath = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
                         "LeagueSharp" + Environment.UserName.GetHashCode().ToString("X"));
 
                     var oldPath2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LeagueSharp");
@@ -129,17 +113,17 @@ namespace LeagueSharp.Loader
             }
             catch
             {
-                //ignore
+                // ignore
             }
 
-            #endregion
+            
         }
 
         private void ConfigInit()
         {
             Config.Load(Assembly.GetExecutingAssembly().Location.EndsWith("loader.exe", StringComparison.OrdinalIgnoreCase));
 
-            #region Add GameSetting DisableDrawings
+            
 
             if (Config.Instance.Settings.GameSettings.All(x => x.Name != "Show Drawings"))
             {
@@ -157,55 +141,30 @@ namespace LeagueSharp.Loader
             {
                 Config.Instance.Settings.GameSettings.Add(
                     new GameSettings
-                        {
-                            Name = "Send Anonymous Assembly Statistics",
-                            PosibleValues = new List<string> { "True", "False" },
-                            SelectedValue = "True"
-                        });
+                    {
+                        Name = "Send Anonymous Assembly Statistics", 
+                        PosibleValues = new List<string> { "True", "False" }, 
+                        SelectedValue = "True"
+                    });
             }
 
             if (Config.Instance.Settings.GameSettings.All(x => x.Name != "Always Inject Default Profile"))
             {
                 Config.Instance.Settings.GameSettings.Add(
                     new GameSettings
-                        {
-                            Name = "Always Inject Default Profile",
-                            PosibleValues = new List<string> { "True", "False" },
-                            SelectedValue = "False"
-                        });
+                    {
+                        Name = "Always Inject Default Profile", 
+                        PosibleValues = new List<string> { "True", "False" }, 
+                        SelectedValue = "False"
+                    });
             }
 
-            try
-            {
-                if (Config.Instance.Profiles.First().InstalledAssemblies.All(a => a.Name != "LeagueSharp.SDK"))
-                {
-                    var sdk = new LeagueSharpAssembly
-                        {
-                            Name = "LeagueSharp.SDK",
-                            DisplayName = "LeagueSharp.SDK",
-                            SvnUrl = "https://github.com/LeagueSharp/LeagueSharp.SDK",
-                            InjectChecked = true,
-                            InstallChecked = true,
-                            PathToProjectFile = Path.Combine(Directories.RepositoryDir, "8443D874", "trunk", "LeagueSharp.SDK.csproj")
-                        };
-
-                    sdk.Update();
-                    sdk.Compile();
-
-                    Config.Instance.Profiles.First().InstalledAssemblies.Add(sdk);
-                }
-            }
-            catch
-            {
-                // wtf
-            }
-
-            #endregion
+            
         }
 
         private void ExecutableRandomization()
         {
-            #region Executable Randomization
+            
 
             if (Assembly.GetExecutingAssembly().Location.EndsWith("loader.exe", StringComparison.OrdinalIgnoreCase))
             {
@@ -215,7 +174,6 @@ namespace LeagueSharp.Loader
                     {
                         try
                         {
-
                             if (File.Exists(Directories.AssemblyFile))
                             {
                                 File.SetAttributes(Directories.AssemblyFile, FileAttributes.Normal);
@@ -283,44 +241,46 @@ namespace LeagueSharp.Loader
             }
 
             AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
+            {
+                try
                 {
-                    try
+                    Injection.Unload();
+                    Utility.ClearDirectory(Directories.AssembliesDir);
+                    Utility.ClearDirectory(Directories.LogsDir);
+
+                    Views.MainWindow.Instance?.TrayIcon?.Dispose();
+
+                    if (this.mutex != null && this.createdNew)
                     {
-                        Injection.Unload();
-                        Utility.ClearDirectory(Directories.AssembliesDir);
-                        Utility.ClearDirectory(Directories.LogsDir);
-
-                        Views.MainWindow.Instance?.TrayIcon?.Dispose();
-
-                        if (this.mutex != null && this.createdNew)
-                        {
-                            this.mutex.ReleaseMutex();
-                        }
+                        this.mutex.ReleaseMutex();
                     }
-                    catch
-                    {
-                        // ignored
-                    }
+                }
+                catch
+                {
+                    // ignored
+                }
 
-                    if (!Assembly.GetExecutingAssembly().Location.EndsWith("loader.exe"))
-                    {
-                        var info = new ProcessStartInfo
-                            {
-                                Arguments = "/C choice /C Y /N /D Y /T 1 & Del \"" + Directories.AssemblyFile + "\" \"" + Directories.AssemblyConfigFile + "\" \"" + Directories.AssemblyPdbFile + "\"",
-                                WindowStyle = ProcessWindowStyle.Hidden,
-                                CreateNoWindow = true,
-                                FileName = "cmd.exe"
-                            };
-                        Process.Start(info);
-                    }
-                };
+                if (!Assembly.GetExecutingAssembly().Location.EndsWith("loader.exe"))
+                {
+                    var info = new ProcessStartInfo
+                               {
+                                   Arguments =
+                                       "/C choice /C Y /N /D Y /T 1 & Del \"" + Directories.AssemblyFile + "\" \"" + Directories.AssemblyConfigFile
+                                       + "\" \"" + Directories.AssemblyPdbFile + "\"", 
+                                   WindowStyle = ProcessWindowStyle.Hidden, 
+                                   CreateNoWindow = true, 
+                                   FileName = "cmd.exe"
+                               };
+                    Process.Start(info);
+                }
+            };
 
-            #endregion
+            
         }
 
         private void Localize()
         {
-            //Load the language resources.
+            // Load the language resources.
             var dict = new ResourceDictionary();
 
             if (Config.Instance.SelectedLanguage != null)

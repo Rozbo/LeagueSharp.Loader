@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="StrongNameManager.cs" company="PlaySharp">
-//   Copyright (c) PlaySharp. All rights reserved.
+// <copyright file="StrongNameManager.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace PlaySharp.Toolkit.StrongName

@@ -1,24 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// Utility.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Utility.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     #region
@@ -30,7 +14,6 @@ namespace LeagueSharp.Loader.Class
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.RegularExpressions;
-    using System.Threading;
     using System.Web;
     using System.Windows.Forms;
     using System.Xml.Serialization;
@@ -86,6 +69,7 @@ namespace LeagueSharp.Loader.Class
                         // ignored
                     }
                 }
+
                 foreach (var di in dir.GetDirectories())
                 {
                     try
@@ -106,9 +90,9 @@ namespace LeagueSharp.Loader.Class
         }
 
         public static void CopyDirectory(
-            string sourceDirName,
-            string destDirName,
-            bool copySubDirs = false,
+            string sourceDirName, 
+            string destDirName, 
+            bool copySubDirs = false, 
             bool overrideFiles = false)
         {
             try
@@ -166,7 +150,7 @@ namespace LeagueSharp.Loader.Class
                 var programcs = ReadResourceString("LeagueSharp.Loader.Resources.DefaultProject.Program.cs");
 
                 var targetPath = Path.Combine(
-                    Directories.LocalRepoDir,
+                    Directories.LocalRepoDir, 
                     assemblyName + Environment.TickCount.GetHashCode().ToString("X"));
                 Directory.CreateDirectory(targetPath);
 
@@ -180,7 +164,7 @@ namespace LeagueSharp.Loader.Class
                 File.WriteAllText(Path.Combine(targetPath, assemblyName + ".csproj"), defaultProjectcsproj);
                 File.WriteAllText(Path.Combine(targetPath, "Program.cs"), programcs);
 
-                return new LeagueSharpAssembly(assemblyName, Path.Combine(targetPath, assemblyName + ".csproj"), "");
+                return new LeagueSharpAssembly(assemblyName, Path.Combine(targetPath, assemblyName + ".csproj"), string.Empty);
             }
             catch (Exception ex)
             {
@@ -195,6 +179,7 @@ namespace LeagueSharp.Loader.Class
             {
                 return;
             }
+
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
             {
                 if (stream != null)
@@ -214,7 +199,7 @@ namespace LeagueSharp.Loader.Class
         {
             try
             {
-                //CN
+                // CN
                 if (lastKnownPath.EndsWith("Game\\League of Legends.exe"))
                 {
                     return lastKnownPath;
@@ -224,7 +209,7 @@ namespace LeagueSharp.Loader.Class
                 if (Directory.Exists(dir))
                 {
                     var versionPaths = Directory.GetDirectories(dir);
-                    var greatestVersionString = "";
+                    var greatestVersionString = string.Empty;
                     long greatestVersion = 0;
 
                     foreach (var versionPath in versionPaths)
@@ -246,8 +231,8 @@ namespace LeagueSharp.Loader.Class
                     if (greatestVersion != 0)
                     {
                         var exe = Directory.GetFiles(
-                            Path.Combine(dir, greatestVersionString),
-                            "League of Legends.exe",
+                            Path.Combine(dir, greatestVersionString), 
+                            "League of Legends.exe", 
                             SearchOption.AllDirectories);
                         return exe.Length > 0 ? exe[0] : null;
                     }
@@ -276,11 +261,13 @@ namespace LeagueSharp.Loader.Class
                 data = new byte[maxSize];
                 crypto.GetNonZeroBytes(data);
             }
+
             var result = new StringBuilder(maxSize);
             foreach (var b in data)
             {
-                result.Append(chars[b % (chars.Length)]);
+                result.Append(chars[b % chars.Length]);
             }
+
             return result.ToString();
         }
 
@@ -290,8 +277,9 @@ namespace LeagueSharp.Loader.Class
             {
                 return;
             }
+
             Application.Current.Dispatcher.Invoke(
-                () => log.Items.Add(new LogItem {Status = status, Source = source, Message = message}));
+                () => log.Items.Add(new LogItem { Status = status, Source = source, Message = message }));
         }
 
         public static string MakeValidFileName(string name)
@@ -337,7 +325,7 @@ namespace LeagueSharp.Loader.Class
                 {
                     using (var stream = File.OpenRead(filePath))
                     {
-                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", "").ToLower();
+                        return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty).ToLower();
                     }
                 }
             }
@@ -376,10 +364,12 @@ namespace LeagueSharp.Loader.Class
                         Directory.CreateDirectory(dir);
                     }
                 }
+
                 if (File.Exists(path))
                 {
                     File.Delete(path);
                 }
+
                 try
                 {
                     if (copy)
@@ -417,6 +407,7 @@ namespace LeagueSharp.Loader.Class
                     }
                 }
             }
+
             return string.Empty;
         }
 
@@ -435,11 +426,13 @@ namespace LeagueSharp.Loader.Class
                     {
                         Directory.CreateDirectory(pathDirectory);
                     }
+
                     while (File.Exists(newPath))
                     {
                         var tmpFileName = string.Format("{0} ({1})", fileName, counter++);
                         newPath = Path.Combine(pathDirectory, tmpFileName + fileExtension);
                     }
+
                     File.Move(file, newPath);
                     return true;
                 }
@@ -448,6 +441,7 @@ namespace LeagueSharp.Loader.Class
             {
                 return false;
             }
+
             return false;
         }
 
@@ -491,6 +485,7 @@ namespace LeagueSharp.Loader.Class
                     {
                         result.Add(0x00);
                     }
+
                     i += pattern.Length - 1;
                 }
                 else

@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// Injection.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Injection.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     using System;
@@ -44,8 +29,6 @@ namespace LeagueSharp.Loader.Class
 
         public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
-        public delegate void OnInjectDelegate(IntPtr hwnd);
-
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate bool GetFilePathDelegate(int processId, [Out] StringBuilder path, int size);
 
@@ -55,43 +38,11 @@ namespace LeagueSharp.Loader.Class
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate bool InjectDLLDelegate(int processId, string path);
 
-        public static event OnInjectDelegate OnInject;
-
-        public static bool InjectedAssembliesChanged { get; set; }
-
-        public static bool IsInjected
-        {
-            get
-            {
-                return LeagueProcess.Any(IsProcessInjected);
-            }
-        }
-
-        public static List<IntPtr> LeagueInstances
-        {
-            get
-            {
-                return FindWindows("League of Legends (TM) Client");
-            }
-        }
+        public static bool IsInjected => LeagueProcess.Any(IsProcessInjected);
 
         public static bool PrepareDone { get; set; }
 
-        internal static bool IsLeagueOfLegendsFocused
-        {
-            get
-            {
-                return GetWindowText(Win32Imports.GetForegroundWindow()).Contains("League of Legends (TM) Client");
-            }
-        }
-
-        private static List<Process> LeagueProcess
-        {
-            get
-            {
-                return Process.GetProcessesByName("League of Legends").ToList();
-            }
-        }
+        private static List<Process> LeagueProcess => Process.GetProcessesByName("League of Legends").ToList();
 
         public static void Pulse()
         {
@@ -105,7 +56,7 @@ namespace LeagueSharp.Loader.Class
                 return;
             }
 
-            //Don't inject untill we checked that there are not updates for the loader.
+            // Don't inject untill we checked that there are not updates for the loader.
             if (Updater.Updating || !Updater.CheckedForUpdates || !PrepareDone)
             {
                 return;
@@ -145,14 +96,14 @@ namespace LeagueSharp.Loader.Class
                         if (injectDLL != null && supported)
                         {
                             injectDLL(instance.Id, PathRandomizer.LeagueSharpCoreDllPath);
-
-                            OnInject?.Invoke(IntPtr.Zero);
+                            Utility.Log(LogStatus.Info, "Pulse", $"Inject {instance.Id} [{PathRandomizer.LeagueSharpCoreDllPath}]", Logs.MainLog);
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     Utility.Log(LogStatus.Error, "Pulse", e.Message, Logs.MainLog);
+
                     // ignored
                 }
             }
@@ -173,42 +124,11 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
-        private static List<IntPtr> FindWindows(string title)
-        {
-            var windows = new List<IntPtr>();
-
-            Win32Imports.EnumWindows(
-                delegate(IntPtr wnd, IntPtr param)
-                    {
-                        if (GetWindowText(wnd).Contains(title))
-                        {
-                            windows.Add(wnd);
-                        }
-                        return true;
-                    },
-                IntPtr.Zero);
-
-            return windows;
-        }
-
         private static string GetFilePath(Process process)
         {
             var sb = new StringBuilder(255);
             getFilePath(process.Id, sb, sb.Capacity);
             return sb.ToString();
-        }
-
-        private static string GetWindowText(IntPtr hWnd)
-        {
-            var size = Win32Imports.GetWindowTextLength(hWnd);
-            if (size++ > 0)
-            {
-                var builder = new StringBuilder(size);
-                Win32Imports.GetWindowText(hWnd, builder, builder.Capacity);
-                return builder.ToString();
-            }
-
-            return string.Empty;
         }
 
         private static bool IsProcessInjected(Process leagueProcess)
@@ -221,9 +141,10 @@ namespace LeagueSharp.Loader.Class
                 }
                 catch (Exception e)
                 {
-                    Utility.Log(LogStatus.Error, "Injector", string.Format("Error - {0}", e), Logs.MainLog);
+                    Utility.Log(LogStatus.Error, "Injector", $"Error - {e}", Logs.MainLog);
                 }
             }
+
             return false;
         }
 
@@ -232,14 +153,14 @@ namespace LeagueSharp.Loader.Class
             try
             {
                 mmf = MemoryMappedFile.CreateOrOpen(
-                    "Local\\LeagueSharpBootstrap",
-                    260 * 2,
+                    "Local\\LeagueSharpBootstrap", 
+                    260 * 2, 
                     MemoryMappedFileAccess.ReadWrite);
 
                 var sharedMem = new SharedMemoryLayout(
-                    PathRandomizer.LeagueSharpSandBoxDllPath,
-                    PathRandomizer.LeagueSharpBootstrapDllPath,
-                    Config.Instance.Username,
+                    PathRandomizer.LeagueSharpSandBoxDllPath, 
+                    PathRandomizer.LeagueSharpBootstrapDllPath, 
+                    Config.Instance.Username, 
                     Config.Instance.Password);
 
                 using (var writer = mmf.CreateViewAccessor())

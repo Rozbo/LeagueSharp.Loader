@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// UpdateWindow.xaml.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="UpdateWindow.xaml.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Views
 {
     #region
@@ -40,7 +25,7 @@ namespace LeagueSharp.Loader.Views
 
     public enum UpdateAction
     {
-        Core,
+        Core, 
 
         Loader
     }
@@ -50,6 +35,10 @@ namespace LeagueSharp.Loader.Views
     /// </summary>
     public partial class UpdateWindow : INotifyPropertyChanged
     {
+        private string progressText;
+
+        private string updateMessage;
+
         public UpdateWindow(UpdateAction action, string url)
         {
             this.InitializeComponent();
@@ -70,10 +59,6 @@ namespace LeagueSharp.Loader.Views
             }
         }
 
-        private string progressText;
-
-        private string updateMessage;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string ProgressText
@@ -82,12 +67,14 @@ namespace LeagueSharp.Loader.Views
             {
                 return this.progressText;
             }
+
             set
             {
                 if (Equals(value, this.progressText))
                 {
                     return;
                 }
+
                 this.progressText = value;
                 this.OnPropertyChanged();
             }
@@ -99,12 +86,14 @@ namespace LeagueSharp.Loader.Views
             {
                 return this.updateMessage;
             }
+
             set
             {
                 if (Equals(value, this.updateMessage))
                 {
                     return;
                 }
+
                 this.updateMessage = value;
                 this.OnPropertyChanged();
             }
@@ -133,10 +122,10 @@ namespace LeagueSharp.Loader.Views
 
             Application.Current.Dispatcher.InvokeAsync(
                 async () =>
-                    {
-                        await Task.Delay(250);
-                        this.Close();
-                    });
+                {
+                    await Task.Delay(250);
+                    this.Close();
+                });
 
             return result;
         }
@@ -220,10 +209,10 @@ namespace LeagueSharp.Loader.Views
             new Process
             {
                 StartInfo =
-                        {
-                            FileName = Updater.SetupFile,
-                            Arguments = "/VERYSILENT /DIR=\"" + Directories.CurrentDirectory + "\""
-                        }
+                {
+                    FileName = Updater.SetupFile, 
+                    Arguments = "/VERYSILENT /DIR=\"" + Directories.CurrentDirectory + "\""
+                }
             }.Start();
 
             Environment.Exit(0);
@@ -235,14 +224,14 @@ namespace LeagueSharp.Loader.Views
         {
             Application.Current.Dispatcher.InvokeAsync(
                 () =>
-                    {
-                        this.UpdateProgressBar.Value = args.ProgressPercentage;
+                {
+                    this.UpdateProgressBar.Value = args.ProgressPercentage;
 
-                        this.ProgressText = string.Format(
-                            this.FindResource("UpdateText").ToString(),
-                            args.BytesReceived / 1024,
-                            args.TotalBytesToReceive / 1024);
-                    });
+                    this.ProgressText = string.Format(
+                        this.FindResource("UpdateText").ToString(), 
+                        args.BytesReceived / 1024, 
+                        args.TotalBytesToReceive / 1024);
+                });
         }
     }
 }

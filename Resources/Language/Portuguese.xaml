@@ -29,7 +29,7 @@
 
     <!-- MainWindow Assemblies DB datagrid Menu -->
     <system:String x:Key="InstallFromDB">Instalar</system:String>
-     
+
     <!-- MainWindow Assemblies datagrid Menu -->
     <system:String x:Key="MenuUpdateAndCompile">Atualizar e Compilar</system:String>
     <system:String x:Key="MenuRemove">Excluir</system:String>
@@ -83,7 +83,7 @@
     <system:String x:Key="Always Inject Default Profile">Injetar sempre o perfil predefinido(Default)</system:String>
     <system:String x:Key="UpdateOnStart">Atualizar os assemblies ao iniciar o programa</system:String>
     <system:String x:Key="UpdateCoreOnInject">Atualizar core ao injetar</system:String>
-     
+
     <system:String x:Key="Inject">Injetar</system:String>
     <system:String x:Key="Logout">Sair</system:String>
     <system:String x:Key="DefaultHotkeys">Restaurar</system:String>

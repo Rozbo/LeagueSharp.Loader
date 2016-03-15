@@ -127,6 +127,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Class\AssemblyStatus.cs" />
     <Compile Include="Class\Auth.cs" />
     <Compile Include="Class\FolderSelectDialog.cs" />
     <Compile Include="Class\Injection.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Class\Installer\WebClientEx.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Class\LeagueSharpAssemblies.cs" />
     <Compile Include="Class\LSUriScheme.cs" />
     <Compile Include="Class\PathRandomizer.cs" />
     <Compile Include="Class\Profile.cs" />
@@ -155,13 +157,19 @@
     <Compile Include="Class\Win32Imports.cs" />
     <Compile Include="Data\Config.cs" />
     <Compile Include="Class\LeagueSharpAssembly.cs" />
-    <Compile Include="Data\Crypto\XOR.cs" />
+    <Compile Include="Data\ConfigSettings.cs" />
     <Compile Include="Data\Directories.cs" />
+    <Compile Include="Data\GameSettings.cs" />
+    <Compile Include="Data\HotkeyEntry.cs" />
+    <Compile Include="Data\Hotkeys.cs" />
     <Compile Include="Data\Log.cs" />
     <Compile Include="Class\GitUpdater.cs" />
     <Compile Include="Class\Utility.cs" />
     <EmbeddedResource Include="Resources\DefaultProject\AssemblyInfo.cs" />
     <EmbeddedResource Include="Resources\DefaultProject\Program.cs" />
+    <Compile Include="Views\ProfileControl.xaml.cs">
+      <DependentUpon>ProfileControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Settings\Hotkeys.xaml.cs">
       <DependentUpon>Hotkeys.xaml</DependentUpon>
     </Compile>
@@ -266,6 +274,10 @@
     <Page Include="Resources\Language\Spanish.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ProfileControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Settings\General.xaml">
       <SubType>Designer</SubType>

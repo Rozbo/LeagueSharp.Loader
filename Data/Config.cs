@@ -1,37 +1,19 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// Config.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Config.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Data
 {
-    #region
-
     using System;
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Runtime.CompilerServices;
-    using System.Windows;
     using System.Windows.Forms;
-    using System.Windows.Input;
     using System.Xml.Serialization;
 
     using LeagueSharp.Loader.Class;
@@ -42,63 +24,73 @@ namespace LeagueSharp.Loader.Data
 
     using MessageBox = System.Windows.MessageBox;
 
-    #endregion
-
     [XmlType(AnonymousType = true)]
     [XmlRoot(Namespace = "", IsNullable = false)]
     public class Config : INotifyPropertyChanged
     {
-        private string _appDirectory;
+        private string authKey;
 
-        private double _columnCheckWidth = 20;
+        private ObservableCollection<RepositoryEntry> blockedRepositories = new ObservableCollection<RepositoryEntry>();
 
-        private double _columnLocationWidth = 180;
+        private bool championCheck = true;
 
-        private double _columnNameWidth = 150;
+        private double columnCheckWidth = 20;
 
-        private double _columnTypeWidth = 75;
+        private double columnLocationWidth = 180;
 
-        private double _columnVersionWidth = 90;
+        private double columnNameWidth = 150;
 
-        private bool _firstRun = true;
+        private double columnTypeWidth = 75;
 
-        private Hotkeys _hotkeys;
-
-        private bool _install = true;
-
-        private ObservableCollection<string> _knownRepositories;
-
-        private string _leagueOfLegendsExePath;
-
-        private ObservableCollection<Profile> _profiles;
-
-        private string _selectedColor;
-
-        private string _selectedLanguage;
-
-        private Profile _selectedProfile;
-
-        private ConfigSettings _settings;
-
-        private bool _showDevOptions;
-
-        private bool _tosAccepted;
-
-        private bool _updateOnLoad;
-
-        private List<string> blockedRepositories;
+        private double columnVersionWidth = 90;
 
         private ObservableCollection<AssemblyEntry> databaseAssemblies = new ObservableCollection<AssemblyEntry>();
 
         private bool enableDebug;
 
+        private bool firstRun = true;
+
+        private Hotkeys hotkeys;
+
+        private bool install = true;
+
+        private ObservableCollection<RepositoryEntry> knownRepositories = new ObservableCollection<RepositoryEntry>();
+
+        private string leagueOfLegendsExePath;
+
+        private bool libraryCheck = true;
+
+        private string password;
+
+        private ObservableCollection<Profile> profiles = new ObservableCollection<Profile>();
+
+        private string searchText = string.Empty;
+
+        private string selectedColor;
+
+        private string selectedLanguage;
+
+        private int selectedProfileId;
+
+        private ConfigSettings settings;
+
+        private bool showDevOptions;
+
+        private bool tosAccepted;
+
         private bool updateCoreOnInject = true;
+
+        private bool updateOnLoad;
+
+        private bool useCloudConfig = true;
+
+        private string username;
+
+        private bool utilityCheck = true;
 
         private double windowHeight = 450;
 
         private double windowLeft = 150;
-
-        private WindowState windowState;
 
         private double windowTop = 150;
 
@@ -106,34 +98,120 @@ namespace LeagueSharp.Loader.Data
 
         private int workers = 5;
 
-        private bool useCloudConfig = true;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         [XmlIgnore]
         [JsonIgnore]
         public static Config Instance { get; set; }
 
-        public bool UseCloudConfig
+        public string AuthKey
         {
             get
             {
-                return this.useCloudConfig;
+                return this.authKey;
             }
+
             set
             {
-                this.useCloudConfig = value;
+                this.authKey = value;
                 this.OnPropertyChanged();
             }
         }
 
-        public int Workers
+        public ObservableCollection<RepositoryEntry> BlockedRepositories
         {
             get
             {
-                return this.workers;
+                return this.blockedRepositories;
             }
+
             set
             {
-                this.workers = value;
+                this.blockedRepositories = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public bool ChampionCheck
+        {
+            get
+            {
+                return this.championCheck;
+            }
+
+            set
+            {
+                this.championCheck = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public double ColumnCheckWidth
+        {
+            get
+            {
+                return this.columnCheckWidth;
+            }
+
+            set
+            {
+                this.columnCheckWidth = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public double ColumnLocationWidth
+        {
+            get
+            {
+                return this.columnLocationWidth;
+            }
+
+            set
+            {
+                this.columnLocationWidth = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public double ColumnNameWidth
+        {
+            get
+            {
+                return this.columnNameWidth;
+            }
+
+            set
+            {
+                this.columnNameWidth = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public double ColumnTypeWidth
+        {
+            get
+            {
+                return this.columnTypeWidth;
+            }
+
+            set
+            {
+                this.columnTypeWidth = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public double ColumnVersionWidth
+        {
+            get
+            {
+                return this.columnVersionWidth;
+            }
+
+            set
+            {
+                this.columnVersionWidth = value;
                 this.OnPropertyChanged();
             }
         }
@@ -146,6 +224,7 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.databaseAssemblies;
             }
+
             set
             {
                 this.databaseAssemblies = value;
@@ -159,87 +238,10 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.enableDebug;
             }
+
             set
             {
                 this.enableDebug = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public string AppDirectory
-        {
-            get
-            {
-                return this._appDirectory;
-            }
-            set
-            {
-                this._appDirectory = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public double ColumnCheckWidth
-        {
-            get
-            {
-                return this._columnCheckWidth;
-            }
-            set
-            {
-                this._columnCheckWidth = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public double ColumnLocationWidth
-        {
-            get
-            {
-                return this._columnLocationWidth;
-            }
-            set
-            {
-                this._columnLocationWidth = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public double ColumnNameWidth
-        {
-            get
-            {
-                return this._columnNameWidth;
-            }
-            set
-            {
-                this._columnNameWidth = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public double ColumnTypeWidth
-        {
-            get
-            {
-                return this._columnTypeWidth;
-            }
-            set
-            {
-                this._columnTypeWidth = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public double ColumnVersionWidth
-        {
-            get
-            {
-                return this._columnVersionWidth;
-            }
-            set
-            {
-                this._columnVersionWidth = value;
                 this.OnPropertyChanged();
             }
         }
@@ -248,11 +250,12 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._firstRun;
+                return this.firstRun;
             }
+
             set
             {
-                this._firstRun = value;
+                this.firstRun = value;
                 this.OnPropertyChanged();
             }
         }
@@ -261,11 +264,12 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._hotkeys;
+                return this.hotkeys;
             }
+
             set
             {
-                this._hotkeys = value;
+                this.hotkeys = value;
                 this.OnPropertyChanged();
             }
         }
@@ -274,25 +278,28 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._install;
+                return this.install;
             }
+
             set
             {
-                this._install = value;
+                this.install = value;
                 this.OnPropertyChanged();
             }
         }
 
-        [XmlArrayItem("KnownRepositories", IsNullable = true)]
-        public ObservableCollection<string> KnownRepositories
+        [XmlIgnore]
+        [JsonIgnore]
+        public ObservableCollection<RepositoryEntry> KnownRepositories
         {
             get
             {
-                return this._knownRepositories;
+                return this.knownRepositories;
             }
+
             set
             {
-                this._knownRepositories = value;
+                this.knownRepositories = value;
                 this.OnPropertyChanged();
             }
         }
@@ -301,47 +308,93 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._leagueOfLegendsExePath;
+                return this.leagueOfLegendsExePath;
             }
+
             set
             {
-                if (value.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                if (!value.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
+                    Utility.Log(LogStatus.Error, "LeagueOfLegendsExePath", $"Invalid file: {value}", Logs.MainLog);
                     return;
                 }
 
-                this._leagueOfLegendsExePath = value;
+                this.leagueOfLegendsExePath = value;
                 this.OnPropertyChanged();
             }
         }
 
-        public string Password { get; set; }
+        public bool LibraryCheck
+        {
+            get
+            {
+                return this.libraryCheck;
+            }
+
+            set
+            {
+                this.libraryCheck = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string Password
+        {
+            get
+            {
+                return this.password;
+            }
+
+            set
+            {
+                this.password = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         [XmlArrayItem("Profiles", IsNullable = true)]
         public ObservableCollection<Profile> Profiles
         {
             get
             {
-                return this._profiles;
+                return this.profiles;
             }
+
             set
             {
-                this._profiles = value;
+                this.profiles = value;
                 this.OnPropertyChanged();
             }
         }
 
         public string RandomName { get; set; }
 
+        [XmlIgnore]
+        [JsonIgnore]
+        public string SearchText
+        {
+            get
+            {
+                return this.searchText;
+            }
+
+            set
+            {
+                this.searchText = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         public string SelectedColor
         {
             get
             {
-                return this._selectedColor;
+                return this.selectedColor;
             }
+
             set
             {
-                this._selectedColor = value;
+                this.selectedColor = value;
                 this.OnPropertyChanged();
             }
         }
@@ -350,25 +403,51 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._selectedLanguage;
+                return this.selectedLanguage;
             }
+
             set
             {
-                this._selectedLanguage = value;
+                this.selectedLanguage = value;
                 this.OnPropertyChanged();
             }
         }
 
+        [XmlIgnore]
+        [JsonIgnore]
         public Profile SelectedProfile
         {
             get
             {
-                return this._selectedProfile;
+                if (this.SelectedProfileId >= this.Profiles.Count)
+                {
+                    return this.Profiles.FirstOrDefault();
+                }
+
+                return this.Profiles[this.SelectedProfileId];
             }
+
             set
             {
-                this._selectedProfile = value;
+                var index = this.Profiles.IndexOf(value);
+                this.SelectedProfileId = index < 0 ? 0 : index;
                 this.OnPropertyChanged();
+                this.OnPropertyChanged("SelectedProfileId");
+            }
+        }
+
+        public int SelectedProfileId
+        {
+            get
+            {
+                return this.selectedProfileId;
+            }
+
+            set
+            {
+                this.selectedProfileId = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChanged("SelectedProfile");
             }
         }
 
@@ -376,11 +455,12 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._settings;
+                return this.settings;
             }
+
             set
             {
-                this._settings = value;
+                this.settings = value;
                 this.OnPropertyChanged();
             }
         }
@@ -389,11 +469,12 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._showDevOptions;
+                return this.showDevOptions;
             }
+
             set
             {
-                this._showDevOptions = value;
+                this.showDevOptions = value;
                 this.OnPropertyChanged();
             }
         }
@@ -402,11 +483,12 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._tosAccepted;
+                return this.tosAccepted;
             }
+
             set
             {
-                this._tosAccepted = value;
+                this.tosAccepted = value;
                 this.OnPropertyChanged();
             }
         }
@@ -417,6 +499,7 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.updateCoreOnInject;
             }
+
             set
             {
                 this.updateCoreOnInject = value;
@@ -428,16 +511,57 @@ namespace LeagueSharp.Loader.Data
         {
             get
             {
-                return this._updateOnLoad;
+                return this.updateOnLoad;
             }
+
             set
             {
-                this._updateOnLoad = value;
+                this.updateOnLoad = value;
                 this.OnPropertyChanged();
             }
         }
 
-        public string Username { get; set; }
+        public bool UseCloudConfig
+        {
+            get
+            {
+                return this.useCloudConfig;
+            }
+
+            set
+            {
+                this.useCloudConfig = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public string Username
+        {
+            get
+            {
+                return this.username;
+            }
+
+            set
+            {
+                this.username = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public bool UtilityCheck
+        {
+            get
+            {
+                return this.utilityCheck;
+            }
+
+            set
+            {
+                this.utilityCheck = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         public double WindowHeight
         {
@@ -445,6 +569,7 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.windowHeight;
             }
+
             set
             {
                 this.windowHeight = value;
@@ -458,22 +583,10 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.windowLeft;
             }
+
             set
             {
                 this.windowLeft = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public WindowState WindowState
-        {
-            get
-            {
-                return this.windowState;
-            }
-            set
-            {
-                this.windowState = value;
                 this.OnPropertyChanged();
             }
         }
@@ -484,6 +597,7 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.windowTop;
             }
+
             set
             {
                 this.windowTop = value;
@@ -497,6 +611,7 @@ namespace LeagueSharp.Loader.Data
             {
                 return this.windowWidth;
             }
+
             set
             {
                 this.windowWidth = value;
@@ -504,53 +619,46 @@ namespace LeagueSharp.Loader.Data
             }
         }
 
-        public List<string> BlockedRepositories
+        public int Workers
         {
             get
             {
-                return this.blockedRepositories;
+                return this.workers;
             }
+
             set
             {
-                this.blockedRepositories = value;
+                this.workers = value;
                 this.OnPropertyChanged();
             }
         }
 
-        public string AuthKey { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private bool IsOnScreen()
+        public static void Load(bool isLoader = false)
         {
-            var screens = Screen.AllScreens;
-            foreach (var screen in screens)
+            if (App.Args.Length == 0 && !isLoader)
             {
-                var formTopLeft = new System.Drawing.Point((int)this.WindowLeft, (int)this.WindowTop);
-
-                if (screen.WorkingArea.Contains(formTopLeft))
+                if (LoadFromCloud())
                 {
-                    return true;
+                    return;
                 }
             }
 
-            return false;
-        }
+            if (LoadFromFile())
+            {
+                return;
+            }
 
-        public static void SaveAndRestart(bool cloud = false)
-        {
-            Instance.FirstRun = false;
-            Save(cloud);
+            if (LoadFromBackup())
+            {
+                return;
+            }
 
-            var info = new ProcessStartInfo
-                {
-                    Arguments = "/C choice /C Y /N /D Y /T 1 & " + Path.Combine(Directories.CurrentDirectory, "loader.exe"),
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true,
-                    FileName = "cmd.exe"
-                };
+            if (LoadFromResource())
+            {
+                return;
+            }
 
-            Process.Start(info);
+            MessageBox.Show("Something went horribly wrong while loading your Configuration /ff");
             Environment.Exit(0);
         }
 
@@ -566,19 +674,63 @@ namespace LeagueSharp.Loader.Data
 
                 Utility.MapClassToXmlFile(typeof(Config), Instance, Directories.ConfigFilePath);
 
-                if (cloud && 
-                    Instance.UseCloudConfig && 
-                    !string.IsNullOrEmpty(Instance.Username) && 
-                    !string.IsNullOrEmpty(Instance.Password) && 
+                if (cloud &&
+                    Instance.UseCloudConfig &&
+                    !string.IsNullOrEmpty(Instance.Username) &&
+                    !string.IsNullOrEmpty(Instance.Password) &&
                     WebService.Client.IsAuthenticated)
                 {
                     WebService.Client.CloudStore(Instance, "Config");
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
             }
+        }
+
+        public static void SaveAndRestart(bool cloud = false)
+        {
+            Instance.FirstRun = false;
+            Save(cloud);
+
+            var info = new ProcessStartInfo
+                       {
+                           Arguments = "/C choice /C Y /N /D Y /T 1 & " + Path.Combine(Directories.CurrentDirectory, "loader.exe"), 
+                           WindowStyle = ProcessWindowStyle.Hidden, 
+                           CreateNoWindow = true, 
+                           FileName = "cmd.exe"
+                       };
+
+            Process.Start(info);
+            Environment.Exit(0);
+        }
+
+        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private static bool LoadFromBackup()
+        {
+            try
+            {
+                if (!File.Exists($"{Directories.ConfigFilePath}.bak"))
+                {
+                    return false;
+                }
+
+                Instance = (Config)Utility.MapXmlFileToClass(typeof(Config), $"{Directories.ConfigFilePath}.bak");
+                Save(false);
+
+                return true;
+            }
+            catch
+            {
+                File.Delete($"{Directories.ConfigFilePath}.bak");
+            }
+
+            return false;
         }
 
         private static bool LoadFromCloud()
@@ -644,46 +796,6 @@ namespace LeagueSharp.Loader.Data
             return false;
         }
 
-        private static bool LoadFromBackup()
-        {
-            try
-            {
-                if (!File.Exists($"{Directories.ConfigFilePath}.bak"))
-                {
-                    return false;
-                }
-
-                Instance = (Config)Utility.MapXmlFileToClass(typeof(Config), $"{Directories.ConfigFilePath}.bak");
-                Save(false);
-
-                return true;
-            }
-            catch
-            {
-                File.Delete($"{Directories.ConfigFilePath}.bak");
-            }
-
-            return false;
-        }
-
-        private static bool LoadFromResource()
-        {
-            try
-            {
-                Utility.CreateFileFromResource(Directories.ConfigFilePath, "LeagueSharp.Loader.Resources.config.xml");
-                Instance = (Config)Utility.MapXmlFileToClass(typeof(Config), Directories.ConfigFilePath);
-                Save(false);
-
-                return true;
-            }
-            catch
-            {
-                // ignored
-            }
-
-            return false;
-        }
-
         private static bool LoadFromFile()
         {
             try
@@ -708,232 +820,44 @@ namespace LeagueSharp.Loader.Data
             }
             catch
             {
-                //ignore
+                // ignore
             }
 
             return false;
         }
 
-        public static void Load(bool isLoader = false)
+        private static bool LoadFromResource()
         {
-            if (App.Args.Length == 0 && !isLoader)
+            try
             {
-                if (LoadFromCloud())
+                Utility.CreateFileFromResource(Directories.ConfigFilePath, "LeagueSharp.Loader.Resources.config.xml");
+                Instance = (Config)Utility.MapXmlFileToClass(typeof(Config), Directories.ConfigFilePath);
+                Save(false);
+
+                return true;
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return false;
+        }
+
+        private bool IsOnScreen()
+        {
+            var screens = Screen.AllScreens;
+            foreach (var screen in screens)
+            {
+                var formTopLeft = new Point((int)this.WindowLeft, (int)this.WindowTop);
+
+                if (screen.WorkingArea.Contains(formTopLeft))
                 {
-                    return;
+                    return true;
                 }
             }
 
-            if (LoadFromFile())
-            {
-                return;
-            }
-
-            if (LoadFromBackup())
-            {
-                return;
-            }
-
-            if (LoadFromResource())
-            {
-                return;
-            }
-
-            MessageBox.Show("Something went horribly wrong while loading your Configuration /ff");
-            Environment.Exit(0);
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    [XmlType(AnonymousType = true)]
-    public class ConfigSettings : INotifyPropertyChanged
-    {
-        private ObservableCollection<GameSettings> _gameSettings;
-
-        [XmlArrayItem("GameSettings", IsNullable = true)]
-        public ObservableCollection<GameSettings> GameSettings
-        {
-            get
-            {
-                return this._gameSettings;
-            }
-            set
-            {
-                this._gameSettings = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    public class GameSettings : INotifyPropertyChanged
-    {
-        private string _name;
-
-        private List<string> _posibleValues;
-
-        private string _selectedValue;
-
-        [XmlIgnore]
-        [JsonIgnore]
-        public string DisplayName => Utility.GetMultiLanguageText(this._name);
-
-        public string Name
-        {
-            get
-            {
-                return this._name;
-            }
-            set
-            {
-                this._name = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public List<string> PosibleValues
-        {
-            get
-            {
-                return this._posibleValues;
-            }
-            set
-            {
-                this._posibleValues = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public string SelectedValue
-        {
-            get
-            {
-                return this._selectedValue;
-            }
-            set
-            {
-                this._selectedValue = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    [XmlType(AnonymousType = true)]
-    public class Hotkeys : INotifyPropertyChanged
-    {
-        private ObservableCollection<HotkeyEntry> _selectedHotkeys;
-
-        [XmlArrayItem("SelectedHotkeys", IsNullable = true)]
-        public ObservableCollection<HotkeyEntry> SelectedHotkeys
-        {
-            get
-            {
-                return this._selectedHotkeys;
-            }
-            set
-            {
-                this._selectedHotkeys = value;
-                this.OnPropertyChanged("Hotkeys");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    public class HotkeyEntry : INotifyPropertyChanged
-    {
-        private Key _hotkey;
-
-        private string _name;
-
-        public Key DefaultKey { get; set; }
-
-        public string Description { get; set; }
-
-        public string DisplayDescription => Utility.GetMultiLanguageText(this.Description);
-
-        public Key Hotkey
-        {
-            get
-            {
-                return this._hotkey;
-            }
-            set
-            {
-                this._hotkey = value;
-                this.OnPropertyChanged();
-                this.OnPropertyChanged("HotkeyString");
-            }
-        }
-
-        public byte HotkeyInt
-        {
-            get
-            {
-                if (this.Hotkey == Key.LeftShift || this.Hotkey == Key.RightShift)
-                {
-                    return 16;
-                }
-
-                if (this.Hotkey == Key.LeftAlt || this.Hotkey == Key.RightAlt)
-                {
-                    return 0x12;
-                }
-
-                if (this.Hotkey == Key.LeftCtrl || this.Hotkey == Key.RightCtrl)
-                {
-                    return 0x11;
-                }
-
-                return (byte)KeyInterop.VirtualKeyFromKey(this.Hotkey);
-            }
-            set
-            {
-            }
-        }
-
-        public string HotkeyString => this._hotkey.ToString();
-
-        public string Name
-        {
-            get
-            {
-                return this._name;
-            }
-            set
-            {
-                this._name = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return false;
         }
     }
 }

@@ -1,23 +1,8 @@
-﻿#region LICENSE
-
-// Copyright 2016-2016 LeagueSharp.Loader
-// GitUpdater.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="GitUpdater.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     #region
@@ -49,10 +34,12 @@ namespace LeagueSharp.Loader.Class
                 {
                     return;
                 }
+
                 if (Directory.Exists(dir))
                 {
                     Directory.Delete(dir, true);
                 }
+
                 dir = repoDirectory.Remove(dir.LastIndexOf("\\"));
                 Directory.GetFiles(dir).ToList().ForEach(File.Delete);
             }
@@ -86,6 +73,54 @@ namespace LeagueSharp.Loader.Class
             catch (Exception ex)
             {
                 Utility.Log(LogStatus.Error, "Clear Unused", ex.Message, Logs.MainLog);
+            }
+        }
+
+        internal static string Update(string url)
+        {
+            var root = Path.Combine(Directories.RepositoryDir, url.GetHashCode().ToString("X"), "trunk");
+
+            if (!IsValid(root))
+            {
+                var cloneResult = Clone(url, root);
+
+                if (!cloneResult)
+                {
+                    Utility.Log(LogStatus.Error, "Updater", $"Failed to Clone - {url}", Logs.MainLog);
+                    return root;
+                }
+            }
+
+            var pullResult = Pull(root);
+
+            if (!pullResult)
+            {
+                Utility.Log(LogStatus.Error, "Updater", $"Failed to Pull Updates - {url}", Logs.MainLog);
+
+                Clone(url, root);
+            }
+
+            return root;
+        }
+
+        private static bool Clone(string url, string directory)
+        {
+            try
+            {
+                if (Directory.Exists(directory))
+                {
+                    Utility.ClearDirectory(directory);
+                    Directory.Delete(directory, true);
+                }
+
+                Utility.Log(LogStatus.Info, "Clone", url, Logs.MainLog);
+                Repository.Clone(url, directory);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Utility.Log(LogStatus.Error, "Clone", e.Message, Logs.MainLog);
+                return false;
             }
         }
 
@@ -138,18 +173,18 @@ namespace LeagueSharp.Loader.Class
                     repo.Reset(ResetMode.Hard);
                     repo.RemoveUntrackedFiles();
                     repo.Network.Pull(
-                        new Signature(Config.Instance.Username, $"{Config.Instance.Username}@joduska.me", DateTimeOffset.Now),
+                        new Signature(Config.Instance.Username, $"{Config.Instance.Username}@joduska.me", DateTimeOffset.Now), 
                         new PullOptions
-                            {
-                                MergeOptions =
-                                    new MergeOptions
-                                        {
-                                            FastForwardStrategy = FastForwardStrategy.Default,
-                                            FileConflictStrategy = CheckoutFileConflictStrategy.Theirs,
-                                            MergeFileFavor = MergeFileFavor.Theirs,
-                                            CommitOnSuccess = true
-                                        }
-                            });
+                        {
+                            MergeOptions =
+                                new MergeOptions
+                                {
+                                    FastForwardStrategy = FastForwardStrategy.Default, 
+                                    FileConflictStrategy = CheckoutFileConflictStrategy.Theirs, 
+                                    MergeFileFavor = MergeFileFavor.Theirs, 
+                                    CommitOnSuccess = true
+                                }
+                        });
 
                     repo.Checkout(repo.Head, new CheckoutOptions { CheckoutModifiers = CheckoutModifiers.Force });
 
@@ -166,54 +201,6 @@ namespace LeagueSharp.Loader.Class
                 Utility.Log(LogStatus.Error, "Pull", e.Message, Logs.MainLog);
                 return false;
             }
-        }
-
-        private static bool Clone(string url, string directory)
-        {
-            try
-            {
-                if (Directory.Exists(directory))
-                {
-                    Utility.ClearDirectory(directory);
-                    Directory.Delete(directory, true);
-                }
-
-                Utility.Log(LogStatus.Info, "Clone", url, Logs.MainLog);
-                Repository.Clone(url, directory);
-                return true;
-            }
-            catch (Exception e)
-            {
-                Utility.Log(LogStatus.Error, "Clone", e.Message, Logs.MainLog);
-                return false;
-            }
-        }
-
-        internal static string Update(string url)
-        {
-            var root = Path.Combine(Directories.RepositoryDir, url.GetHashCode().ToString("X"), "trunk");
-
-            if (!IsValid(root))
-            {
-                var cloneResult = Clone(url, root);
-
-                if (!cloneResult)
-                {
-                    Utility.Log(LogStatus.Error, "Updater", $"Failed to Clone - {url}", Logs.MainLog);
-                    return root;
-                }
-            }
-
-            var pullResult = Pull(root);
-
-            if (!pullResult)
-            {
-                Utility.Log(LogStatus.Error, "Updater", $"Failed to Pull Updates - {url}", Logs.MainLog);
-
-                Clone(url, root);
-            }
-
-            return root;
         }
     }
 }

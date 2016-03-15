@@ -1,27 +1,11 @@
-﻿#region LICENSE
-
-// Copyright 2015-2015 LeagueSharp.Loader
-// PathRandomizer.cs is part of LeagueSharp.Loader.
-// 
-// LeagueSharp.Loader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-// 
-// LeagueSharp.Loader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with LeagueSharp.Loader. If not, see <http://www.gnu.org/licenses/>.
-
-#endregion
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="PathRandomizer.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
@@ -47,9 +31,9 @@ namespace LeagueSharp.Loader.Class
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate bool ModifyIATDelegate(
-            [MarshalAs(UnmanagedType.LPWStr)] string modulePath,
-            [MarshalAs(UnmanagedType.LPWStr)] string newModulePath,
-            [MarshalAs(UnmanagedType.LPStr)] string moduleName,
+            [MarshalAs(UnmanagedType.LPWStr)] string modulePath, 
+            [MarshalAs(UnmanagedType.LPWStr)] string newModulePath, 
+            [MarshalAs(UnmanagedType.LPStr)] string moduleName, 
             [MarshalAs(UnmanagedType.LPStr),] string newModuleName);
 
         public static string BaseDirectory
@@ -68,6 +52,7 @@ namespace LeagueSharp.Loader.Class
                 {
                     _leagueSharpBootstrapDllName = GetRandomName("LeagueSharp.Bootstrap.dll");
                 }
+
                 return _leagueSharpBootstrapDllName;
             }
         }
@@ -88,6 +73,7 @@ namespace LeagueSharp.Loader.Class
                 {
                     _leagueSharpCoreDllName = GetRandomName("LeagueSharp.Core.dll");
                 }
+
                 return _leagueSharpCoreDllName;
             }
         }
@@ -108,6 +94,7 @@ namespace LeagueSharp.Loader.Class
                 {
                     _leagueSharpDllName = GetRandomName("LeagueSharp.dll");
                 }
+
                 return _leagueSharpDllName;
             }
         }
@@ -124,11 +111,12 @@ namespace LeagueSharp.Loader.Class
         {
             get
             {
-                //  return "LeagueSharp.SandBox.dll";
+                // return "LeagueSharp.SandBox.dll";
                 if (_leagueSharpSandBoxDllName == null)
                 {
                     _leagueSharpSandBoxDllName = GetRandomName("LeagueSharp.SandBox.dll");
                 }
+
                 return _leagueSharpSandBoxDllName;
             }
         }
@@ -161,29 +149,29 @@ namespace LeagueSharp.Loader.Class
 
             try
             {
-                //result = result && Utility.OverwriteFile(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"), LeagueSharpDllPath, true);
-                //result = result && ModifyIAT(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"), LeagueSharpDllPath, "LeagueSharp.Core.dll", LeagueSharpCoreDllName);
+                // result = result && Utility.OverwriteFile(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"), LeagueSharpDllPath, true);
+                // result = result && ModifyIAT(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"), LeagueSharpDllPath, "LeagueSharp.Core.dll", LeagueSharpCoreDllName);
                 result = result
                          && Utility.OverwriteFile(
-                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.Core.dll"),
-                             LeagueSharpCoreDllPath,
+                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.Core.dll"), 
+                             LeagueSharpCoreDllPath, 
                              true);
                 result = result
                          && Utility.OverwriteFile(
-                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.Bootstrap.dll"),
-                             LeagueSharpBootstrapDllPath,
+                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.Bootstrap.dll"), 
+                             LeagueSharpBootstrapDllPath, 
                              true);
                 result = result
                          && Utility.OverwriteFile(
-                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.SandBox.dll"),
-                             LeagueSharpSandBoxDllPath,
+                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.SandBox.dll"), 
+                             LeagueSharpSandBoxDllPath, 
                              true);
 
-                //Temp solution :^) , for some reason calling ModifyIAT() crashes the loader.
+                // Temp solution :^) , for some reason calling ModifyIAT() crashes the loader.
                 var byteArray = File.ReadAllBytes(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"));
                 byteArray = Utility.ReplaceFilling(
-                    byteArray,
-                    Encoding.ASCII.GetBytes("LeagueSharp.Core.dll"),
+                    byteArray, 
+                    Encoding.ASCII.GetBytes("LeagueSharp.Core.dll"), 
                     Encoding.ASCII.GetBytes(LeagueSharpCoreDllName));
                 File.WriteAllBytes(LeagueSharpDllPath, byteArray);
 
@@ -210,7 +198,7 @@ namespace LeagueSharp.Loader.Class
             var ar2 = Utility.Md5Hash(Config.Instance.Username);
 
             const string allowedChars = "0123456789abcdefhijkmnopqrstuvwxyz";
-            var result = "";
+            var result = string.Empty;
             for (var i = 0; i < Math.Min(15, Math.Max(3, Config.Instance.Username.Length)); i++)
             {
                 var j = (ar1.ToCharArray()[i] * ar2.ToCharArray()[i]) * 2;

@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="StrongNameUtility.cs" company="PlaySharp">
-//   Copyright (c) PlaySharp. All rights reserved.
+// <copyright file="StrongNameUtility.cs" company="LeagueSharp.Loader">
+//   Copyright (c) LeagueSharp.Loader. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace PlaySharp.Toolkit.StrongName
@@ -19,7 +19,6 @@ namespace PlaySharp.Toolkit.StrongName
     using Mono.Security;
     using Mono.Security.Cryptography;
     using Mono.Security.X509;
-
 
     [SecurityCritical]
     public static class StrongNameUtility
