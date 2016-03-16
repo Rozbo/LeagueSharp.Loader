@@ -39,8 +39,6 @@ namespace LeagueSharp.Loader
             this.mutex = new Mutex(true, Utility.Md5Hash(Environment.UserName), out this.createdNew);
             Args = e.Args;
 
-            
-
             try
             {
                 if (string.Compare(Process.GetCurrentProcess().ProcessName, "LeagueSharp.Loader.exe", StringComparison.InvariantCultureIgnoreCase)
@@ -54,8 +52,6 @@ namespace LeagueSharp.Loader
             {
                 // ignore
             }
-
-            
 
             this.ConfigInit();
             this.AppDataRandomization();
@@ -84,8 +80,6 @@ namespace LeagueSharp.Loader
 
         private void AppDataRandomization()
         {
-            
-
             try
             {
                 if (!Directory.Exists(Directories.AppDataDirectory))
@@ -117,15 +111,11 @@ namespace LeagueSharp.Loader
             {
                 // ignore
             }
-
-            
         }
 
         private void ConfigInit()
         {
             Config.Load(Assembly.GetExecutingAssembly().Location.EndsWith("loader.exe", StringComparison.OrdinalIgnoreCase));
-
-            
 
             if (Config.Instance.Settings.GameSettings.All(x => x.Name != "Show Drawings"))
             {
@@ -160,14 +150,10 @@ namespace LeagueSharp.Loader
                         SelectedValue = "False"
                     });
             }
-
-            
         }
 
         private void ExecutableRandomization()
         {
-            
-
             if (Assembly.GetExecutingAssembly().Location.EndsWith("loader.exe", StringComparison.OrdinalIgnoreCase))
             {
                 try
@@ -276,8 +262,6 @@ namespace LeagueSharp.Loader
                     Process.Start(info);
                 }
             };
-
-            
         }
 
         private void Localize()

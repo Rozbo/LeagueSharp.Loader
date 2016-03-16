@@ -215,3 +215,4 @@ packages/*
 .mr.developer.cfg
 
 **/*.sln.ide
+/InnoSetup/Output

@@ -175,12 +175,6 @@ namespace LeagueSharp.Loader.Class
                     Encoding.ASCII.GetBytes(LeagueSharpCoreDllName));
                 File.WriteAllBytes(LeagueSharpDllPath, byteArray);
 
-                if (!File.Exists(Path.Combine(Directories.CoreDirectory, "sn.exe")))
-                {
-                    MessageBox.Show("sn.exe not found");
-                    Environment.Exit(0);
-                }
-
                 result = result
                          && StrongNameUtility.ReSign(LeagueSharpDllPath, Path.Combine(Directories.CoreDirectory, "key.snk"));
 
