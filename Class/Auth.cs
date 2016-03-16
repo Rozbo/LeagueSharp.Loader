@@ -29,13 +29,9 @@ namespace LeagueSharp.Loader.Class
                     return new Tuple<bool, string>(true, "Success");
                 }
             }
-            catch (UnauthorizedAccessException e)
+            catch
             {
                 return new Tuple<bool, string>(false, string.Format(Utility.GetMultiLanguageText("WrongAuth"), "www.joduska.me"));
-            }
-            catch (Exception e)
-            {
-                return new Tuple<bool, string>(false, e.Message);
             }
 
             return new Tuple<bool, string>(false, string.Format(Utility.GetMultiLanguageText("WrongAuth"), "www.joduska.me"));
