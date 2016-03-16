@@ -29,7 +29,7 @@ namespace LeagueSharp.Loader
 
         public static string[] Args { get; set; }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             if (File.Exists(Updater.SetupFile))
             {
@@ -70,6 +70,8 @@ namespace LeagueSharp.Loader
             {
                 ThemeManager.ChangeAppStyle(Current, ThemeManager.GetAccent(Config.Instance.SelectedColor), ThemeManager.GetAppTheme("BaseLight"));
             }
+
+            await Auth.Login(Config.Instance.Username, Config.Instance.Password);
 
             base.OnStartup(e);
         }

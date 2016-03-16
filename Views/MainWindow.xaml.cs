@@ -314,9 +314,26 @@ namespace LeagueSharp.Loader.Views
             }
         }
 
+        /// <summary>
+        /// Bootstraps this instance.
+        /// </summary>
+        /// <remarks>
+        /// Bootstrap flow:
+        /// splash
+        /// ui setup
+        /// loader/core update
+        /// tos
+        /// auth
+        /// update webservice
+        /// compile
+        /// remoting/injection
+        /// </remarks>
+        /// <returns></returns>
         private async Task Bootstrap()
         {
-            await this.CheckForUpdates(true, false, false);
+            var splash = new SplashScreen("resources/splash.png");
+            this.Visibility = Visibility.Hidden;
+            splash.Show(false, true);
 
             this.Browser.Visibility = Visibility.Hidden;
             this.TosBrowser.Visibility = Visibility.Hidden;
@@ -341,7 +358,6 @@ namespace LeagueSharp.Loader.Views
             this.AssembliesTabItem.Visibility = Visibility.Hidden;
             this.SettingsTabItem.Visibility = Visibility.Hidden;
             this.AssemblyDB.Visibility = Visibility.Hidden;
-            this.DataContext = this;
 
             this.DevMenu.Visibility = Config.Instance.ShowDevOptions ? Visibility.Visible : Visibility.Collapsed;
             this.Config.PropertyChanged += (o, args) =>
@@ -354,35 +370,12 @@ namespace LeagueSharp.Loader.Views
                 }
             };
 
-            this.Config.PropertyChanged += this.ConfigOnSearchTextChanged;
-            this.UpdateFilters();
-
-            var result = await Auth.Login(Config.Instance.Username, Config.Instance.Password);
-
-            // Try to login with the saved credentials.
-            if (!result.Item1)
-            {
-                await this.ShowLoginDialog();
-            }
-            else
-            {
-                this.OnLogin(Config.Instance.Username);
-            }
-
-            if (Config.Instance.FirstRun)
-            {
-                Config.SaveAndRestart();
-            }
-
-            await this.CheckForUpdates(false, true, false);
-            await Updater.UpdateRepositories();
-            await Updater.UpdateWebService();
-            Utility.Log(LogStatus.Info, "Bootstrap", "Update Complete", Logs.MainLog);
-
-            
+            await this.CheckForUpdates(true, true, false);
 
             if (!Config.Instance.TosAccepted)
             {
+                splash.Close(TimeSpan.FromMilliseconds(300));
+                this.Visibility = Visibility.Visible;
                 this.RightWindowCommands.Visibility = Visibility.Collapsed;
                 this.TosButton_OnClick(null, null);
             }
@@ -401,11 +394,32 @@ namespace LeagueSharp.Loader.Views
                     }
                 });
 
-            
+            this.Config.PropertyChanged += this.ConfigOnSearchTextChanged;
+            this.UpdateFilters();
 
-            this.UpdateAccount();
+            // Try to login with the saved credentials.
+            if (!WebService.Client.IsAuthenticated)
+            {
+                splash.Close(TimeSpan.FromMilliseconds(300));
+                this.Visibility = Visibility.Visible;
+                await this.ShowLoginDialog();
+            }
+            else
+            {
+                this.OnLogin(Config.Instance.Username);
+            }
 
-            #region assembly compile
+            if (Config.Instance.FirstRun)
+            {
+                Config.SaveAndRestart();
+            }
+
+            splash.Close(TimeSpan.FromMilliseconds(300));
+            this.Visibility = Visibility.Visible;
+            await Updater.UpdateRepositories();
+            await Updater.UpdateWebService();
+            await this.UpdateAccount();
+            Utility.Log(LogStatus.Info, "Bootstrap", "Update Complete", Logs.MainLog);
 
             var allAssemblies = new List<LeagueSharpAssembly>();
 
@@ -420,8 +434,6 @@ namespace LeagueSharp.Loader.Views
             await this.PrepareAssemblies(allAssemblies, Config.Instance.FirstRun || Config.Instance.UpdateOnLoad, true);
 
             Utility.Log(LogStatus.Info, "Bootstrap", "Compile Complete", Logs.MainLog);
-
-            #endregion
 
             // injection, randomizer, remoting
             this.InitSystem();
@@ -565,8 +577,13 @@ namespace LeagueSharp.Loader.Views
             await this.PrepareAssemblies(Config.Instance.SelectedProfile.InstalledAssemblies, false, true);
         }
 
-        private void ConfigOnSearchTextChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        private void ConfigOnSearchTextChanged(object sender, PropertyChangedEventArgs args)
         {
+            if (!args.PropertyName.EndsWith("Check") && args.PropertyName != "SearchText")
+            {
+                return;
+            }
+
             this.UpdateFilters();
         }
 

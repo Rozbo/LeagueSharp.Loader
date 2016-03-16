@@ -29,6 +29,11 @@ namespace LeagueSharp.Loader.Class
             {
                 try
                 {
+                    if (!Client.IsAuthenticated)
+                    {
+                        return new AssemblyEntry[0];
+                    }
+
                     if (assemblies.Count == 0)
                     {
                         assemblies = Client.Assemblies();
