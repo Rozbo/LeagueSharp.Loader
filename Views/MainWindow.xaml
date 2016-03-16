@@ -9,7 +9,7 @@
                       mc:Ignorable="d"
                       d:DataContext="{d:DesignInstance Type=views:MainWindow, IsDesignTimeCreatable=True}"
                       MinHeight="240"
-                      MinWidth="400"
+                      MinWidth="900"
                       WindowStartupLocation="CenterScreen"
                       Loaded="MainWindow_OnLoaded"
                       Closing="MainWindow_OnClosing"

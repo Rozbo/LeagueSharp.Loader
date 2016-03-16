@@ -331,115 +331,129 @@ namespace LeagueSharp.Loader.Views
         /// <returns></returns>
         private async Task Bootstrap()
         {
-            var splash = new SplashScreen("resources/splash.png");
-            this.Visibility = Visibility.Hidden;
-            splash.Show(false, true);
-
-            this.Browser.Visibility = Visibility.Hidden;
-            this.TosBrowser.Visibility = Visibility.Hidden;
-            this.GeneralSettingsItem.IsSelected = true;
-
-            PropertyDescriptor pd = DependencyPropertyDescriptor.FromProperty(
-                DataGridColumn.ActualWidthProperty, 
-                typeof(DataGridColumn));
-
-            foreach (var column in this.InstalledAssembliesDataGrid.Columns)
+            try
             {
-                pd.AddValueChanged(column, this.ColumnWidthPropertyChanged);
-            }
+                var splash = new SplashScreen("resources/splash.png");
+                this.Visibility = Visibility.Hidden;
+                splash.Show(false, true);
 
-            this.ColumnCheck.Width = Config.Instance.ColumnCheckWidth;
-            this.ColumnName.Width = Config.Instance.ColumnNameWidth;
-            this.ColumnType.Width = Config.Instance.ColumnTypeWidth;
-            this.ColumnVersion.Width = Config.Instance.ColumnVersionWidth;
-            this.ColumnLocation.Width = Config.Instance.ColumnLocationWidth;
+                this.Browser.Visibility = Visibility.Hidden;
+                this.TosBrowser.Visibility = Visibility.Hidden;
+                this.GeneralSettingsItem.IsSelected = true;
 
-            this.NewsTabItem.Visibility = Visibility.Hidden;
-            this.AssembliesTabItem.Visibility = Visibility.Hidden;
-            this.SettingsTabItem.Visibility = Visibility.Hidden;
-            this.AssemblyDB.Visibility = Visibility.Hidden;
+                PropertyDescriptor pd = DependencyPropertyDescriptor.FromProperty(
+                    DataGridColumn.ActualWidthProperty, 
+                    typeof(DataGridColumn));
 
-            this.DevMenu.Visibility = Config.Instance.ShowDevOptions ? Visibility.Visible : Visibility.Collapsed;
-            this.Config.PropertyChanged += (o, args) =>
-            {
-                if (args.PropertyName == "ShowDevOptions")
+                foreach (var column in this.InstalledAssembliesDataGrid.Columns)
                 {
-                    this.DevMenu.Visibility = Config.Instance.ShowDevOptions
-                                                  ? Visibility.Visible
-                                                  : Visibility.Collapsed;
+                    pd.AddValueChanged(column, this.ColumnWidthPropertyChanged);
                 }
-            };
 
-            await this.CheckForUpdates(true, true, false);
+                this.ColumnCheck.Width = Config.Instance.ColumnCheckWidth;
+                this.ColumnName.Width = Config.Instance.ColumnNameWidth;
+                this.ColumnType.Width = Config.Instance.ColumnTypeWidth;
+                this.ColumnVersion.Width = Config.Instance.ColumnVersionWidth;
+                this.ColumnLocation.Width = Config.Instance.ColumnLocationWidth;
 
-            if (!Config.Instance.TosAccepted)
-            {
-                splash.Close(TimeSpan.FromMilliseconds(300));
-                this.Visibility = Visibility.Visible;
-                this.RightWindowCommands.Visibility = Visibility.Collapsed;
-                this.TosButton_OnClick(null, null);
-            }
-            else
-            {
-                this.AssemblyButton_OnClick(null, null);
-            }
+                this.NewsTabItem.Visibility = Visibility.Hidden;
+                this.AssembliesTabItem.Visibility = Visibility.Hidden;
+                this.SettingsTabItem.Visibility = Visibility.Hidden;
+                this.AssemblyDB.Visibility = Visibility.Hidden;
 
-            // wait for tos accept
-            await Task.Factory.StartNew(
-                () =>
+                this.DevMenu.Visibility = Config.Instance.ShowDevOptions ? Visibility.Visible : Visibility.Collapsed;
+                this.Config.PropertyChanged += (o, args) =>
                 {
-                    while (Config.Instance.TosAccepted == false)
+                    if (args.PropertyName == "ShowDevOptions")
                     {
-                        Thread.Sleep(100);
+                        this.DevMenu.Visibility = Config.Instance.ShowDevOptions
+                                                      ? Visibility.Visible
+                                                      : Visibility.Collapsed;
                     }
-                });
+                };
 
-            this.Config.PropertyChanged += this.ConfigOnSearchTextChanged;
-            this.UpdateFilters();
+                await this.CheckForUpdates(true, true, false);
 
-            // Try to login with the saved credentials.
-            if (!WebService.Client.IsAuthenticated)
-            {
+                if (!Config.Instance.TosAccepted)
+                {
+                    splash.Close(TimeSpan.FromMilliseconds(300));
+                    this.Visibility = Visibility.Visible;
+                    this.RightWindowCommands.Visibility = Visibility.Collapsed;
+                    this.TosButton_OnClick(null, null);
+                }
+                else
+                {
+                    this.AssemblyButton_OnClick(null, null);
+                }
+
+                // wait for tos accept
+                await Task.Factory.StartNew(
+                    () =>
+                    {
+                        while (Config.Instance.TosAccepted == false)
+                        {
+                            Thread.Sleep(100);
+                        }
+                    });
+
+                this.Config.PropertyChanged += this.ConfigOnSearchTextChanged;
+                this.UpdateFilters();
+
+                // Try to login with the saved credentials.
+                if (!WebService.Client.IsAuthenticated)
+                {
+                    splash.Close(TimeSpan.FromMilliseconds(300));
+
+                    this.Browser.Visibility = Visibility.Hidden;
+                    this.TosBrowser.Visibility = Visibility.Hidden;
+
+                    this.Visibility = Visibility.Visible;
+                    await this.ShowLoginDialog();
+                    this.NewsButton_OnClick(null, null);
+                }
+                else
+                {
+                    this.OnLogin(Config.Instance.Username);
+                }
+
+                if (Config.Instance.FirstRun)
+                {
+                    Config.SaveAndRestart();
+                }
+
+                this.RightWindowCommands.Visibility = Visibility.Visible;
+
                 splash.Close(TimeSpan.FromMilliseconds(300));
                 this.Visibility = Visibility.Visible;
-                await this.ShowLoginDialog();
+                await Updater.UpdateRepositories();
+                await Updater.UpdateWebService();
+                await this.UpdateAccount();
+                Utility.Log(LogStatus.Info, "Bootstrap", "Update Complete", Logs.MainLog);
+
+                var allAssemblies = new List<LeagueSharpAssembly>();
+
+                foreach (var profile in Config.Instance.Profiles)
+                {
+                    allAssemblies.AddRange(profile.InstalledAssemblies);
+                }
+
+                allAssemblies = allAssemblies.Distinct().ToList();
+
+                GitUpdater.ClearUnusedRepos(allAssemblies);
+                await this.PrepareAssemblies(allAssemblies, true, true);
+
+                Utility.Log(LogStatus.Info, "Bootstrap", "Compile Complete", Logs.MainLog);
+
+                // injection, randomizer, remoting
+                this.InitSystem();
+                Utility.Log(LogStatus.Info, "Bootstrap", "System Initialisation Complete", Logs.MainLog);
+
+                this.MainTabControl.SelectedIndex = TAB_ASSEMBLIES;
             }
-            else
+            catch (Exception e)
             {
-                this.OnLogin(Config.Instance.Username);
+                MessageBox.Show(e.ToString(), "Bootstrap Error");
             }
-
-            if (Config.Instance.FirstRun)
-            {
-                Config.SaveAndRestart();
-            }
-
-            splash.Close(TimeSpan.FromMilliseconds(300));
-            this.Visibility = Visibility.Visible;
-            await Updater.UpdateRepositories();
-            await Updater.UpdateWebService();
-            await this.UpdateAccount();
-            Utility.Log(LogStatus.Info, "Bootstrap", "Update Complete", Logs.MainLog);
-
-            var allAssemblies = new List<LeagueSharpAssembly>();
-
-            foreach (var profile in Config.Instance.Profiles)
-            {
-                allAssemblies.AddRange(profile.InstalledAssemblies);
-            }
-
-            allAssemblies = allAssemblies.Distinct().ToList();
-
-            GitUpdater.ClearUnusedRepos(allAssemblies);
-            await this.PrepareAssemblies(allAssemblies, Config.Instance.FirstRun || Config.Instance.UpdateOnLoad, true);
-
-            Utility.Log(LogStatus.Info, "Bootstrap", "Compile Complete", Logs.MainLog);
-
-            // injection, randomizer, remoting
-            this.InitSystem();
-            Utility.Log(LogStatus.Info, "Bootstrap", "System Initialisation Complete", Logs.MainLog);
-
-            this.MainTabControl.SelectedIndex = TAB_ASSEMBLIES;
         }
 
         private async Task CheckForUpdates(bool loader, bool core, bool showDialogOnFinish)
@@ -1269,9 +1283,6 @@ namespace LeagueSharp.Loader.Views
         private void TosAccept_Click(object sender, RoutedEventArgs e)
         {
             Config.Instance.TosAccepted = true;
-
-            this.RightWindowCommands.Visibility = Visibility.Visible;
-            this.NewsButton_OnClick(null, null);
         }
 
         private void TosButton_OnClick(object sender, RoutedEventArgs e)
