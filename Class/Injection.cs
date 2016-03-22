@@ -78,7 +78,7 @@ namespace LeagueSharp.Loader.Class
                             }
                             catch (Exception e)
                             {
-                                Utility.Log(LogStatus.Error, "UpdateCoreOnInject", e.Message, Logs.MainLog);
+                                Utility.Log(LogStatus.Error, e.Message);
                             }
                         }
 
@@ -90,19 +90,19 @@ namespace LeagueSharp.Loader.Class
                         }
                         catch (Exception e)
                         {
-                            Utility.Log(LogStatus.Error, "IsSupported", e.Message, Logs.MainLog);
+                            Utility.Log(LogStatus.Error, e.Message);
                         }
 
                         if (injectDLL != null && supported)
                         {
-                            injectDLL(instance.Id, PathRandomizer.LeagueSharpCoreDllPath);
-                            Utility.Log(LogStatus.Info, "Pulse", $"Inject {instance.Id} [{PathRandomizer.LeagueSharpCoreDllPath}]", Logs.MainLog);
+                            injectDLL(instance.Id, Directories.CoreRandomFilePath);
+                            Utility.Log(LogStatus.Info, $"Inject {instance.Id} [{Directories.CoreRandomFilePath}]");
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Utility.Log(LogStatus.Error, "Pulse", e.Message, Logs.MainLog);
+                    Utility.Log(LogStatus.Error, e.Message);
 
                     // ignored
                 }
@@ -137,11 +137,11 @@ namespace LeagueSharp.Loader.Class
             {
                 try
                 {
-                    return hasModule(leagueProcess.Id, PathRandomizer.LeagueSharpCoreDllName);
+                    return hasModule(leagueProcess.Id, Directories.CoreRandomFileName);
                 }
                 catch (Exception e)
                 {
-                    Utility.Log(LogStatus.Error, "Injector", $"Error - {e}", Logs.MainLog);
+                    Utility.Log(LogStatus.Error, e.Message);
                 }
             }
 
@@ -158,8 +158,8 @@ namespace LeagueSharp.Loader.Class
                     MemoryMappedFileAccess.ReadWrite);
 
                 var sharedMem = new SharedMemoryLayout(
-                    PathRandomizer.LeagueSharpSandBoxDllPath, 
-                    PathRandomizer.LeagueSharpBootstrapDllPath, 
+                    Directories.AppDomainRandomFilePath,
+                    Directories.BootstrapRandomFilePath, 
                     Config.Instance.Username, 
                     Config.Instance.Password);
 

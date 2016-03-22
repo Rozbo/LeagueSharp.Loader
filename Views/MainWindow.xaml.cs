@@ -157,7 +157,7 @@ namespace LeagueSharp.Loader.Views
         {
             this.Working = true;
             var leagueSharpAssemblies = assemblies as IList<LeagueSharpAssembly> ?? assemblies.ToList();
-            Directory.CreateDirectory(Directories.AssembliesDir);
+            Directory.CreateDirectory(Directories.AssembliesDirectory);
 
             await Task.Factory.StartNew(
                 () =>
@@ -241,7 +241,7 @@ namespace LeagueSharp.Loader.Views
                     }
                 }
 
-                foreach (var file in Directory.EnumerateFiles(Directories.AssembliesDir, "*.pdb"))
+                foreach (var file in Directory.EnumerateFiles(Directories.AssembliesDirectory, "*.pdb"))
                 {
                     try
                     {
@@ -428,7 +428,7 @@ namespace LeagueSharp.Loader.Views
                 await Updater.UpdateRepositories();
                 await Updater.UpdateWebService();
                 await this.UpdateAccount();
-                Utility.Log(LogStatus.Info, "Bootstrap", "Update Complete", Logs.MainLog);
+                Utility.Log(LogStatus.Info, "Update Complete");
 
                 var allAssemblies = new List<LeagueSharpAssembly>();
 
@@ -442,11 +442,11 @@ namespace LeagueSharp.Loader.Views
                 GitUpdater.ClearUnusedRepos(allAssemblies);
                 await this.PrepareAssemblies(allAssemblies, true, true);
 
-                Utility.Log(LogStatus.Info, "Bootstrap", "Compile Complete", Logs.MainLog);
+                Utility.Log(LogStatus.Info, "Compile Complete");
 
                 // injection, randomizer, remoting
                 this.InitSystem();
-                Utility.Log(LogStatus.Info, "Bootstrap", "System Initialisation Complete", Logs.MainLog);
+                Utility.Log(LogStatus.Info, "System Initialisation Complete");
 
                 this.MainTabControl.SelectedIndex = TAB_ASSEMBLIES;
             }
@@ -555,7 +555,7 @@ namespace LeagueSharp.Loader.Views
             try
             {
                 var source = Path.GetDirectoryName(selectedAssembly.PathToProjectFile);
-                var destination = Path.Combine(Directories.LocalRepoDir, selectedAssembly.Name) + "_clone_"
+                var destination = Path.Combine(Directories.LocalRepositoriesDirectory, selectedAssembly.Name) + "_clone_"
                                   + Environment.TickCount.GetHashCode().ToString("X");
                 Utility.CopyDirectory(source, destination);
                 var leagueSharpAssembly = new LeagueSharpAssembly(
@@ -1079,7 +1079,7 @@ namespace LeagueSharp.Loader.Views
 
             var selectedAssembly = (LeagueSharpAssembly)this.InstalledAssembliesDataGrid.SelectedItems[0];
             var logFile = Path.Combine(
-                Directories.LogsDir, 
+                Directories.LogsDirectory, 
                 "Error - " + Path.GetFileName(selectedAssembly.Name + ".txt"));
             if (File.Exists(logFile))
             {
@@ -1104,7 +1104,7 @@ namespace LeagueSharp.Loader.Views
             }
             catch (Exception ex)
             {
-                Utility.Log(LogStatus.Error, "Clipboard", ex.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, ex.Message);
             }
         }
 
@@ -1132,7 +1132,7 @@ namespace LeagueSharp.Loader.Views
 
         private void OnLogin(string username)
         {
-            Utility.Log(LogStatus.Ok, "Login", $"Succesfully signed in as {username}", Logs.MainLog);
+            Utility.Log(LogStatus.Info, $"Succesfully signed in as {username}");
             this.Browser.Visibility = Visibility.Visible;
             this.TosBrowser.Visibility = Visibility.Visible;
         }
@@ -1241,13 +1241,11 @@ namespace LeagueSharp.Loader.Views
                 await this.ShowMessageAsync("Login", string.Format(Utility.GetMultiLanguageText("FailedToLogin"), loginResult.Item2));
 
                 Utility.Log(
-                    LogStatus.Error, 
-                    Utility.GetMultiLanguageText("Login"), 
+                    LogStatus.Error,
                     string.Format(
                         Utility.GetMultiLanguageText("LoginError"), 
                         result.Username, 
-                        loginResult.Item2), 
-                    Logs.MainLog);
+                        loginResult.Item2));
             }
         }
 
@@ -1346,10 +1344,8 @@ namespace LeagueSharp.Loader.Views
             if (viewType == null)
             {
                 Utility.Log(
-                    LogStatus.Error, 
-                    "TreeView_OnSelectedItemChanged", 
-                    $"Could not find Settings View (LeagueSharp.Loader.Views.Settings.{name})", 
-                    Logs.MainLog);
+                    LogStatus.Warning, 
+                    $"Could not find Settings View (LeagueSharp.Loader.Views.Settings.{name})");
                 return;
             }
 

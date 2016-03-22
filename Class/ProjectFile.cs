@@ -33,7 +33,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception ex)
             {
-                Utility.Log(LogStatus.Error, "ProjectFile", $"Error - {ex.Message}", this.log);
+                Utility.Log(LogStatus.Error, ex.Message);
             }
         }
 
@@ -81,7 +81,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception ex)
             {
-                Utility.Log(LogStatus.Error, "ProjectFile", ex.Message, this.log);
+                Utility.Log(LogStatus.Error, ex.Message);
             }
         }
     }

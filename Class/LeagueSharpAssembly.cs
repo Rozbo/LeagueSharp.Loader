@@ -188,10 +188,20 @@ namespace LeagueSharp.Loader.Class
             {
                 if (this.pathToBinary == null)
                 {
-                    this.pathToBinary = Path.Combine(
-                        this.Type == AssemblyType.Library ? Directories.CoreDirectory : Directories.AssembliesDir, 
-                        (this.Type == AssemblyType.Library ? string.Empty : this.PathToProjectFile.GetHashCode().ToString("X"))
-                        + Path.GetFileName(Compiler.GetOutputFilePath(this.GetProject())));
+                    var binFileName = Path.GetFileName(Compiler.GetOutputFilePath(this.GetProject()));
+
+                    switch (this.Type)
+                    {
+                        case AssemblyType.Library:
+                            this.pathToBinary = Path.Combine(Directories.CoreDirectory, binFileName);
+                            break;
+
+                        default:
+                            this.pathToBinary = Path.Combine(
+                                Directories.AssembliesDirectory, 
+                                this.PathToProjectFile.GetHashCode().ToString("X") + binFileName);
+                            break;
+                    }
                 }
 
                 return this.pathToBinary;
@@ -209,7 +219,7 @@ namespace LeagueSharp.Loader.Class
 
                 try
                 {
-                    var folderToSearch = Path.Combine(Directories.RepositoryDir, this.SvnUrl.GetHashCode().ToString("X"), "trunk");
+                    var folderToSearch = Path.Combine(Directories.RepositoriesDirectory, this.SvnUrl.GetHashCode().ToString("X"), "trunk");
 
                     if (Directory.Exists(folderToSearch))
                     {
@@ -320,7 +330,7 @@ namespace LeagueSharp.Loader.Class
             {
                 var repositoryMatch = Regex.Match(entry.GithubUrl, @"^(http[s]?)://(?<host>.*?)/(?<author>.*?)/(?<repo>.*?)(/{1}|$)");
                 var repositoryUrl = $"https://{repositoryMatch.Groups["host"]}/{repositoryMatch.Groups["author"]}/{repositoryMatch.Groups["repo"]}";
-                var repositoryDirectory = Path.Combine(Directories.RepositoryDir, repositoryUrl.GetHashCode().ToString("X"), "trunk");
+                var repositoryDirectory = Path.Combine(Directories.RepositoriesDirectory, repositoryUrl.GetHashCode().ToString("X"), "trunk");
                 var path = Path.Combine(
                     repositoryDirectory, 
                     entry.GithubUrl.Replace(repositoryUrl, string.Empty).Replace("/blob/master/", string.Empty).Replace("/", "\\"));
@@ -339,7 +349,7 @@ namespace LeagueSharp.Loader.Class
             this.OnPropertyChanged("Version");
             var project = this.GetProject();
 
-            if (Compiler.Compile(project, Path.Combine(Directories.LogsDir, this.Name + ".txt"), Logs.MainLog))
+            if (Compiler.Compile(project, Path.Combine(Directories.LogsDirectory, this.Name + ".txt"), Logs.MainLog))
             {
                 var result = true;
                 var assemblySource = Compiler.GetOutputFilePath(project);
@@ -417,7 +427,7 @@ namespace LeagueSharp.Loader.Class
                 }
                 catch (Exception e)
                 {
-                    Utility.Log(LogStatus.Error, "Builder", "Error: " + e, Logs.MainLog);
+                    Utility.Log(LogStatus.Error, e.Message);
                 }
             }
 

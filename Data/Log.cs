@@ -39,10 +39,7 @@ namespace LeagueSharp.Loader.Data
 
         private void OnPropertyChanged(string propertyName)
         {
-            if (this.PropertyChanged != null)
-            {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
@@ -100,45 +97,18 @@ namespace LeagueSharp.Loader.Data
 
         private void OnPropertyChanged(string propertyName)
         {
-            if (this.PropertyChanged != null)
-            {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
-    public static class LogStatus
+    public enum LogStatus
     {
-        public static string Error
-        {
-            get
-            {
-                return "Error";
-            }
-        }
+        Info, 
 
-        public static string Info
-        {
-            get
-            {
-                return "Info";
-            }
-        }
+        Error, 
 
-        public static string Ok
-        {
-            get
-            {
-                return "Ok";
-            }
-        }
+        Debug,
 
-        public static string Skipped
-        {
-            get
-            {
-                return "Skipped";
-            }
-        }
+        Warning
     }
 }

@@ -315,7 +315,7 @@ namespace LeagueSharp.Loader.Data
             {
                 if (!value.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    Utility.Log(LogStatus.Error, "LeagueOfLegendsExePath", $"Invalid file: {value}", Logs.MainLog);
+                    Utility.Log(LogStatus.Error, $"Invalid file: {value}");
                     return;
                 }
 

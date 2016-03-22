@@ -29,9 +29,9 @@ namespace LeagueSharp.Loader.Views.Settings
 
         private void OpenFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Directory.Exists(Directories.LogsDir))
+            if (Directory.Exists(Directories.LogsDirectory))
             {
-                Process.Start(Directories.LogsDir);
+                Process.Start(Directories.LogsDirectory);
             }
         }
     }

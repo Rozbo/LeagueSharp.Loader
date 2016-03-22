@@ -61,7 +61,7 @@ namespace LeagueSharp.Loader.Class
             {
                 if (!WebService.Client.IsAuthenticated)
                 {
-                    Utility.Log(LogStatus.Error, "IsSupported", "WebService authentication failed", Logs.MainLog);
+                    Utility.Log(LogStatus.Error, "WebService authentication failed");
                     return false;
                 }
 
@@ -76,7 +76,7 @@ namespace LeagueSharp.Loader.Class
 
                 if (core == null)
                 {
-                    Utility.Log(LogStatus.Error, "IsSupported", "Failed to receive Core version from WebService", Logs.MainLog);
+                    Utility.Log(LogStatus.Error, "Failed to receive Core version from WebService");
                     return false;
                 }
 
@@ -84,7 +84,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "IsSupported", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
             }
 
             return false;
@@ -101,7 +101,7 @@ namespace LeagueSharp.Loader.Class
             {
                 if (!WebService.Client.IsAuthenticated)
                 {
-                    Utility.Log(LogStatus.Error, "UpdateCore", "WebService authentication failed", Logs.MainLog);
+                    Utility.Log(LogStatus.Error, "WebService authentication failed");
                     return new UpdateResponse(CoreUpdateState.Unknown, "WebService authentication failed");
                 }
 
@@ -175,7 +175,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "UpdateCore", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
             }
 
             return new UpdateResponse(CoreUpdateState.Operational, Utility.GetMultiLanguageText("NotUpdateNeeded"));
@@ -202,7 +202,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "UpdateRepositories", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
             }
         }
 
@@ -224,7 +224,7 @@ namespace LeagueSharp.Loader.Class
                         }
                         catch (Exception e)
                         {
-                            Utility.Log(LogStatus.Error, "UpdateWebService", e.Message, Logs.MainLog);
+                            Utility.Log(LogStatus.Error, e.Message);
                         }
                     });
 

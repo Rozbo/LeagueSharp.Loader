@@ -6,53 +6,136 @@
 namespace LeagueSharp.Loader.Data
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
+
+    using LeagueSharp.Loader.Class;
 
     public static class Directories
     {
-        public static readonly string AppDataDirectory =
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                "LS" + Environment.UserName.GetHashCode().ToString("X")) + "\\";
+        private static string appDomainRandomFileName;
 
-        public static readonly string AssembliesDir = Path.Combine(AppDataDirectory, "1") + "\\";
+        private static string bootstrapRandomFileName;
 
-        public static readonly string CurrentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        private static string coreBridgeRandomFileName;
 
-        public static readonly string CoreDirectory = Path.Combine(CurrentDirectory, "System") + "\\";
-
-        public static readonly string BootstrapFilePath = Path.Combine(CoreDirectory, "LeagueSharp.Bootstrap.dll");
-
-        public static readonly string ConfigFilePath = Path.Combine(CurrentDirectory, "config.xml");
-
-        public static readonly string CoreBridgeFilePath = Path.Combine(CoreDirectory, "Leaguesharp.dll");
-
-        public static readonly string CoreFilePath = Path.Combine(CoreDirectory, "Leaguesharp.Core.dll");
-
-        public static readonly string LoaderFilePath = Path.Combine(
-            CurrentDirectory, 
-            Process.GetCurrentProcess().ProcessName);
-
-        public static readonly string LocalRepoDir = Path.Combine(CurrentDirectory, "LocalAssemblies") + "\\";
-
-        public static readonly string LogsDir = Path.Combine(CurrentDirectory, "Logs") + "\\";
-
-        public static readonly string RepositoryDir = Path.Combine(AppDataDirectory, "Repositories") + "\\";
-
-        public static readonly string SandboxFilePath = Path.Combine(CoreDirectory, "LeagueSharp.Sandbox.dll");
+        private static string coreRandomFileName;
 
         static Directories()
         {
-            Directory.CreateDirectory(AssembliesDir);
-            Directory.CreateDirectory(RepositoryDir);
-            Directory.CreateDirectory(LogsDir);
+            Directory.CreateDirectory(AssembliesDirectory);
+            Directory.CreateDirectory(RepositoriesDirectory);
+            Directory.CreateDirectory(LogsDirectory);
         }
 
-        public static string AssemblyConfigFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe.config");
+        public static string AppDataDirectory =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                "LS" + Environment.UserName.GetHashCode().ToString("X"));
 
-        public static string AssemblyFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe");
+        public static string AppDomainFileName => "LeagueSharp.Sandbox.dll";
 
-        public static string AssemblyPdbFile => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.pdb");
+        public static string AppDomainFilePath => Path.Combine(CoreDirectory, AppDomainFileName);
+
+        public static string AppDomainRandomFileName
+        {
+            get
+            {
+                if (appDomainRandomFileName == null)
+                {
+                    appDomainRandomFileName = Utility.GetUniqueFile(AppDomainFileName);
+                }
+
+                return appDomainRandomFileName;
+            }
+        }
+
+        public static string AppDomainRandomFilePath => Path.Combine(AssembliesDirectory, AppDomainRandomFileName);
+
+        public static string AssembliesDirectory => Path.Combine(AppDataDirectory, "bin");
+
+        public static string BootstrapFileName => "LeagueSharp.Bootstrap.dll";
+
+        public static string BootstrapFilePath => Path.Combine(CoreDirectory, BootstrapFileName);
+
+        public static string BootstrapRandomFileName
+        {
+            get
+            {
+                if (bootstrapRandomFileName == null)
+                {
+                    bootstrapRandomFileName = Utility.GetUniqueFile(BootstrapFileName);
+                }
+
+                return bootstrapRandomFileName;
+            }
+        }
+
+        public static string BootstrapRandomFilePath => Path.Combine(AssembliesDirectory, BootstrapRandomFileName);
+
+        public static string ConfigFileName => "config.xml";
+
+        public static string ConfigFilePath => Path.Combine(CurrentDirectory, ConfigFileName);
+
+        public static string CoreBridgeFileName => "Leaguesharp.dll";
+
+        public static string CoreBridgeFilePath => Path.Combine(CoreDirectory, CoreBridgeFileName);
+
+        public static string CoreBridgeRandomFileName
+        {
+            get
+            {
+                if (coreBridgeRandomFileName == null)
+                {
+                    coreBridgeRandomFileName = Utility.GetUniqueFile(CoreBridgeFileName);
+                }
+
+                return coreBridgeRandomFileName;
+            }
+        }
+
+        public static string CoreBridgeRandomFilePath => Path.Combine(AssembliesDirectory, CoreBridgeRandomFileName);
+
+        public static string CoreDirectory => Path.Combine(CurrentDirectory, "System");
+
+        public static string CoreFileName => "Leaguesharp.Core.dll";
+
+        public static string CoreFilePath => Path.Combine(CoreDirectory, CoreFileName);
+
+        public static string CoreRandomFileName
+        {
+            get
+            {
+                if (coreRandomFileName == null)
+                {
+                    coreRandomFileName = Utility.GetUniqueFile(CoreFileName);
+                }
+
+                return coreRandomFileName;
+            }
+        }
+
+        public static string CoreRandomFilePath => Path.Combine(AssembliesDirectory, CoreRandomFileName);
+
+        public static string CurrentDirectory => AppDomain.CurrentDomain.BaseDirectory;
+
+        public static string LoaderFileName => "loader.exe";
+
+        public static string LoaderFilePath => Path.Combine(CurrentDirectory, LoaderFileName);
+
+        public static string LoaderRandomConfigFilePath => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe.config");
+
+        public static string LoaderRandomFilePath => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.exe");
+
+        public static string LoaderRandomPdbFilePath => Path.Combine(CurrentDirectory, $"{Config.Instance?.RandomName}.pdb");
+
+        public static string LocalRepositoriesDirectory => Path.Combine(CurrentDirectory, "LocalAssemblies");
+
+        public static string LogsDirectory => Path.Combine(CurrentDirectory, "Logs");
+
+        public static string RepositoriesDirectory => Path.Combine(AppDataDirectory, "Repositories");
+
+        public static string StrongNameKeyFileName => "key.snk";
+
+        public static string StrongNameKeyFilePath => Path.Combine(CoreDirectory, StrongNameKeyFileName);
     }
 }

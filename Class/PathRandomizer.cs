@@ -17,213 +17,54 @@ namespace LeagueSharp.Loader.Class
 
     internal class PathRandomizer
     {
-        public static Random RandomNumberGenerator = new Random();
-
-        private static string _leagueSharpBootstrapDllName = null;
-
-        private static string _leagueSharpCoreDllName = null;
-
-        private static string _leagueSharpDllName = null;
-
-        private static string _leagueSharpSandBoxDllName = null;
-
-        private static ModifyIATDelegate ModifyIAT = null;
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate bool ModifyIATDelegate(
-            [MarshalAs(UnmanagedType.LPWStr)] string modulePath, 
-            [MarshalAs(UnmanagedType.LPWStr)] string newModulePath, 
-            [MarshalAs(UnmanagedType.LPStr)] string moduleName, 
-            [MarshalAs(UnmanagedType.LPStr),] string newModuleName);
-
-        public static string BaseDirectory
-        {
-            get
-            {
-                return Directories.AssembliesDir;
-            }
-        }
-
-        public static string LeagueSharpBootstrapDllName
-        {
-            get
-            {
-                if (_leagueSharpBootstrapDllName == null)
-                {
-                    _leagueSharpBootstrapDllName = GetRandomName("LeagueSharp.Bootstrap.dll");
-                }
-
-                return _leagueSharpBootstrapDllName;
-            }
-        }
-
-        public static string LeagueSharpBootstrapDllPath
-        {
-            get
-            {
-                return Path.Combine(BaseDirectory, LeagueSharpBootstrapDllName);
-            }
-        }
-
-        public static string LeagueSharpCoreDllName
-        {
-            get
-            {
-                if (_leagueSharpCoreDllName == null)
-                {
-                    _leagueSharpCoreDllName = GetRandomName("LeagueSharp.Core.dll");
-                }
-
-                return _leagueSharpCoreDllName;
-            }
-        }
-
-        public static string LeagueSharpCoreDllPath
-        {
-            get
-            {
-                return Path.Combine(BaseDirectory, LeagueSharpCoreDllName);
-            }
-        }
-
-        public static string LeagueSharpDllName
-        {
-            get
-            {
-                if (_leagueSharpDllName == null)
-                {
-                    _leagueSharpDllName = GetRandomName("LeagueSharp.dll");
-                }
-
-                return _leagueSharpDllName;
-            }
-        }
-
-        public static string LeagueSharpDllPath
-        {
-            get
-            {
-                return Path.Combine(BaseDirectory, LeagueSharpDllName);
-            }
-        }
-
-        public static string LeagueSharpSandBoxDllName
-        {
-            get
-            {
-                // return "LeagueSharp.SandBox.dll";
-                if (_leagueSharpSandBoxDllName == null)
-                {
-                    _leagueSharpSandBoxDllName = GetRandomName("LeagueSharp.SandBox.dll");
-                }
-
-                return _leagueSharpSandBoxDllName;
-            }
-        }
-
-        public static string LeagueSharpSandBoxDllPath
-        {
-            get
-            {
-                return Path.Combine(BaseDirectory, LeagueSharpSandBoxDllName);
-            }
-        }
-
         public static bool CopyFiles()
         {
             var result = true;
-            if (ModifyIAT == null)
-            {
-                ResolveImports();
-            }
 
-            if (ModifyIAT == null)
+            if (!File.Exists(Directories.CoreFilePath))
             {
                 return false;
             }
 
-            if (!File.Exists(Path.Combine(Directories.CoreDirectory, "LeagueSharp.Core.dll")))
-            {
-                return false;
-            }
-
-            if (!File.Exists(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll")))
+            if (!File.Exists(Directories.CoreBridgeFilePath))
             {
                 return false;
             }
 
             try
             {
-                // result = result && Utility.OverwriteFile(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"), LeagueSharpDllPath, true);
-                // result = result && ModifyIAT(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"), LeagueSharpDllPath, "LeagueSharp.Core.dll", LeagueSharpCoreDllName);
-                result = result
-                         && Utility.OverwriteFile(
-                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.Core.dll"), 
-                             LeagueSharpCoreDllPath, 
-                             true);
-                result = result
-                         && Utility.OverwriteFile(
-                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.Bootstrap.dll"), 
-                             LeagueSharpBootstrapDllPath, 
-                             true);
-                result = result
-                         && Utility.OverwriteFile(
-                             Path.Combine(Directories.CoreDirectory, "LeagueSharp.SandBox.dll"), 
-                             LeagueSharpSandBoxDllPath, 
+                result = result && Utility.OverwriteFile(
+                             Directories.BootstrapFilePath, 
+                             Directories.BootstrapRandomFilePath, 
                              true);
 
-                // Temp solution :^) , for some reason calling ModifyIAT() crashes the loader.
-                var byteArray = File.ReadAllBytes(Path.Combine(Directories.CoreDirectory, "LeagueSharp.dll"));
-                byteArray = Utility.ReplaceFilling(
-                    byteArray, 
-                    Encoding.ASCII.GetBytes("LeagueSharp.Core.dll"), 
-                    Encoding.ASCII.GetBytes(LeagueSharpCoreDllName));
-                File.WriteAllBytes(LeagueSharpDllPath, byteArray);
+                result = result && Utility.OverwriteFile(
+                             Directories.AppDomainFilePath, 
+                             Directories.AppDomainRandomFilePath, 
+                             true);
 
-                result = result
-                         && StrongNameUtility.ReSign(LeagueSharpDllPath, Path.Combine(Directories.CoreDirectory, "key.snk"));
+                result = result && Utility.OverwriteFile(
+                             Directories.CoreFilePath, 
+                             Directories.CoreRandomFilePath, 
+                             true);
+
+                result = result && Utility.OverwriteFile(
+                             Directories.CoreBridgeFilePath,
+                             Directories.CoreBridgeRandomFilePath,
+                             true);
+
+                var fixedAssemblyData = Utility.ReplaceFilling(Directories.CoreBridgeRandomFilePath, Directories.CoreFileName, Directories.CoreRandomFileName);
+                File.WriteAllBytes(Directories.CoreBridgeRandomFilePath, fixedAssemblyData);
+
+                result = result && StrongNameUtility.ReSign(Directories.CoreBridgeRandomFilePath, Directories.StrongNameKeyFilePath);
 
                 return result;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
+                Utility.Log(LogStatus.Error, e.Message);
                 return false;
             }
-        }
-
-        public static string GetRandomName(string oldName)
-        {
-            var ar1 = Utility.Md5Hash(oldName);
-            var ar2 = Utility.Md5Hash(Config.Instance.Username);
-
-            const string allowedChars = "0123456789abcdefhijkmnopqrstuvwxyz";
-            var result = string.Empty;
-            for (var i = 0; i < Math.Min(15, Math.Max(3, Config.Instance.Username.Length)); i++)
-            {
-                var j = (ar1.ToCharArray()[i] * ar2.ToCharArray()[i]) * 2;
-                j = j % (allowedChars.Length - 1);
-                result = result + allowedChars[j];
-            }
-
-            return result + ".dll";
-        }
-
-        public static void ResolveImports()
-        {
-            var hModule = Win32Imports.LoadLibrary(Directories.BootstrapFilePath);
-            if (!(hModule != IntPtr.Zero))
-            {
-                return;
-            }
-
-            var procAddress = Win32Imports.GetProcAddress(hModule, "ModifyIAT");
-            if (!(procAddress != IntPtr.Zero))
-            {
-                return;
-            }
-
-            ModifyIAT =
-                Marshal.GetDelegateForFunctionPointer(procAddress, typeof(ModifyIATDelegate)) as ModifyIATDelegate;
         }
     }
 }

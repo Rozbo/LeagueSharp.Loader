@@ -162,22 +162,22 @@ namespace LeagueSharp.Loader
                     {
                         try
                         {
-                            if (File.Exists(Directories.AssemblyFile))
+                            if (File.Exists(Directories.LoaderRandomFilePath))
                             {
-                                File.SetAttributes(Directories.AssemblyFile, FileAttributes.Normal);
-                                File.Delete(Directories.AssemblyFile);
+                                File.SetAttributes(Directories.LoaderRandomFilePath, FileAttributes.Normal);
+                                File.Delete(Directories.LoaderRandomFilePath);
                             }
 
-                            if (File.Exists(Directories.AssemblyPdbFile))
+                            if (File.Exists(Directories.LoaderRandomPdbFilePath))
                             {
-                                File.SetAttributes(Directories.AssemblyPdbFile, FileAttributes.Normal);
-                                File.Delete(Directories.AssemblyPdbFile);
+                                File.SetAttributes(Directories.LoaderRandomPdbFilePath, FileAttributes.Normal);
+                                File.Delete(Directories.LoaderRandomPdbFilePath);
                             }
 
-                            if (File.Exists(Directories.AssemblyConfigFile))
+                            if (File.Exists(Directories.LoaderRandomConfigFilePath))
                             {
-                                File.SetAttributes(Directories.AssemblyConfigFile, FileAttributes.Normal);
-                                File.Delete(Directories.AssemblyConfigFile);
+                                File.SetAttributes(Directories.LoaderRandomConfigFilePath, FileAttributes.Normal);
+                                File.Delete(Directories.LoaderRandomConfigFilePath);
                             }
                         }
                         catch
@@ -209,15 +209,15 @@ namespace LeagueSharp.Loader
                         Config.Instance.RandomName = Utility.GetUniqueKey(6);
                         Config.Save(false);
 
-                        File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.exe"), Directories.AssemblyFile);
-                        File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.pdb"), Directories.AssemblyPdbFile);
-                        File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.exe.config"), Directories.AssemblyConfigFile);
+                        File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.exe"), Directories.LoaderRandomFilePath);
+                        File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.pdb"), Directories.LoaderRandomPdbFilePath);
+                        File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.exe.config"), Directories.LoaderRandomConfigFilePath);
 
-                        Process.Start(Directories.AssemblyFile);
+                        Process.Start(Directories.LoaderRandomFilePath);
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Utility.Log(LogStatus.Error, e.Message);
                     }
 
                     Environment.Exit(0);
@@ -233,8 +233,8 @@ namespace LeagueSharp.Loader
                 try
                 {
                     Injection.Unload();
-                    Utility.ClearDirectory(Directories.AssembliesDir);
-                    Utility.ClearDirectory(Directories.LogsDir);
+                    Utility.ClearDirectory(Directories.AssembliesDirectory);
+                    Utility.ClearDirectory(Directories.LogsDirectory);
 
                     Views.MainWindow.Instance?.TrayIcon?.Dispose();
 
@@ -253,8 +253,8 @@ namespace LeagueSharp.Loader
                     var info = new ProcessStartInfo
                                {
                                    Arguments =
-                                       "/C choice /C Y /N /D Y /T 1 & Del \"" + Directories.AssemblyFile + "\" \"" + Directories.AssemblyConfigFile
-                                       + "\" \"" + Directories.AssemblyPdbFile + "\"", 
+                                       "/C choice /C Y /N /D Y /T 1 & Del \"" + Directories.LoaderRandomFilePath + "\" \"" + Directories.LoaderRandomConfigFilePath
+                                       + "\" \"" + Directories.LoaderRandomPdbFilePath + "\"", 
                                    WindowStyle = ProcessWindowStyle.Hidden, 
                                    CreateNoWindow = true, 
                                    FileName = "cmd.exe"

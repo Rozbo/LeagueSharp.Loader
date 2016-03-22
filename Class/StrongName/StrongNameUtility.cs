@@ -253,7 +253,7 @@ namespace PlaySharp.Toolkit.StrongName
 
                 if (signed)
                 {
-                    Utility.Log(LogStatus.Info, "StrongNameUtility", $"Assembly {assemblyName} successfully signed.", Logs.MainLog);
+                    Utility.Log(LogStatus.Info, $"Assembly {assemblyName} successfully signed.");
                 }
                 else
                 {

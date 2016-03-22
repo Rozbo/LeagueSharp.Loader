@@ -86,7 +86,7 @@ namespace LeagueSharp.Loader.Class
             return new Configuration
                    {
                        DataDirectory = Directories.AppDataDirectory, 
-                       LeagueSharpDllPath = PathRandomizer.LeagueSharpDllPath, 
+                       LeagueSharpDllPath = Directories.CoreBridgeRandomFilePath, 
                        LibrariesDirectory = Directories.CoreDirectory, 
                        ReloadKey = reload, 
                        ReloadAndRecompileKey = recompile, 

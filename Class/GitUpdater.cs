@@ -45,7 +45,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception ex)
             {
-                Utility.Log(LogStatus.Error, "Clear Unused", $"{ex.Message} - {repoDirectory}", log);
+                Utility.Log(LogStatus.Error, $"{ex.Message} - {repoDirectory}");
             }
         }
 
@@ -59,7 +59,7 @@ namespace LeagueSharp.Loader.Class
                     usedRepos.Add(assembly.SvnUrl.GetHashCode().ToString("X"));
                 }
 
-                var dirs = new List<string>(Directory.EnumerateDirectories(Directories.RepositoryDir));
+                var dirs = new List<string>(Directory.EnumerateDirectories(Directories.RepositoriesDirectory));
 
                 foreach (var dir in dirs)
                 {
@@ -72,13 +72,13 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception ex)
             {
-                Utility.Log(LogStatus.Error, "Clear Unused", ex.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, ex.Message);
             }
         }
 
         internal static string Update(string url)
         {
-            var root = Path.Combine(Directories.RepositoryDir, url.GetHashCode().ToString("X"), "trunk");
+            var root = Path.Combine(Directories.RepositoriesDirectory, url.GetHashCode().ToString("X"), "trunk");
 
             if (!IsValid(root))
             {
@@ -86,7 +86,7 @@ namespace LeagueSharp.Loader.Class
 
                 if (!cloneResult)
                 {
-                    Utility.Log(LogStatus.Error, "Updater", $"Failed to Clone - {url}", Logs.MainLog);
+                    Utility.Log(LogStatus.Error, $"Failed to Clone - {url}");
                     return root;
                 }
             }
@@ -95,7 +95,7 @@ namespace LeagueSharp.Loader.Class
 
             if (!pullResult)
             {
-                Utility.Log(LogStatus.Error, "Updater", $"Failed to Pull Updates - {url}", Logs.MainLog);
+                Utility.Log(LogStatus.Error, $"Failed to Pull Updates - {url}");
 
                 Clone(url, root);
             }
@@ -113,13 +113,13 @@ namespace LeagueSharp.Loader.Class
                     Directory.Delete(directory, true);
                 }
 
-                Utility.Log(LogStatus.Info, "Clone", url, Logs.MainLog);
+                Utility.Log(LogStatus.Info, url);
                 Repository.Clone(url, directory);
                 return true;
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "Clone", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
                 return false;
             }
         }
@@ -155,7 +155,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "IsValid", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
                 return false;
             }
 
@@ -168,7 +168,7 @@ namespace LeagueSharp.Loader.Class
             {
                 using (var repo = new Repository(directory))
                 {
-                    Utility.Log(LogStatus.Info, "Pull", directory, Logs.MainLog);
+                    Utility.Log(LogStatus.Info, directory);
 
                     repo.Reset(ResetMode.Hard);
                     repo.RemoveUntrackedFiles();
@@ -190,7 +190,7 @@ namespace LeagueSharp.Loader.Class
 
                     if (repo.Info.IsHeadDetached)
                     {
-                        Utility.Log(LogStatus.Error, "Pull", "Update+Detached", Logs.MainLog);
+                        Utility.Log(LogStatus.Warning, "Update+Detached");
                     }
                 }
 
@@ -198,7 +198,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "Pull", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
                 return false;
             }
         }

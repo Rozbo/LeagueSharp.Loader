@@ -43,9 +43,7 @@ namespace LeagueSharp.Loader.Class
                             {
                                 Utility.Log(
                                     LogStatus.Error, 
-                                    "Compiler", 
-                                    $"Compile - Blacklisted item type detected - {project.FullPath}", 
-                                    log);
+                                    $"Compile - Blacklisted item type detected - {project.FullPath}");
 
                                 return false;
                             }
@@ -57,7 +55,7 @@ namespace LeagueSharp.Loader.Class
                     }
 
                     var doLog = false;
-                    var logErrorFile = Path.Combine(Directories.LogsDir, "Error - " + Path.GetFileName(logfile));
+                    var logErrorFile = Path.Combine(Directories.LogsDirectory, "Error - " + Path.GetFileName(logfile));
                     if (File.Exists(logErrorFile))
                     {
                         File.Delete(logErrorFile);
@@ -83,12 +81,10 @@ namespace LeagueSharp.Loader.Class
                     ProjectCollection.GlobalProjectCollection.UnregisterAllLoggers();
                     ProjectCollection.GlobalProjectCollection.UnloadAllProjects();
                     Utility.Log(
-                        result ? LogStatus.Ok : LogStatus.Error, 
-                        "Compiler", 
+                        result ? LogStatus.Info : LogStatus.Error, 
                         result
                             ? $"Compile - {project.FullPath}"
-                            : $"Compile - Check ./logs/ for details - {project.FullPath}", 
-                        log);
+                            : $"Compile - Check ./logs/ for details - {project.FullPath}");
 
                     if (!result && doLog && File.Exists(logfile))
                     {
@@ -97,7 +93,7 @@ namespace LeagueSharp.Loader.Class
                         {
                             File.Move(
                                 logfile, 
-                                Path.Combine(Directories.LogsDir, "Error - " + Path.GetFileName(logfile)));
+                                Path.Combine(Directories.LogsDirectory, "Error - " + Path.GetFileName(logfile)));
                         }
                     }
                     else if (result && File.Exists(logfile))
@@ -110,7 +106,7 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception ex)
             {
-                Utility.Log(LogStatus.Error, "Compiler", ex.Message, log);
+                Utility.Log(LogStatus.Error, ex.Message);
             }
 
             return false;

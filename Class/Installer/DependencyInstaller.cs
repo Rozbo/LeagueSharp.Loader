@@ -87,7 +87,7 @@ namespace LeagueSharp.Loader.Class.Installer
             }
             catch
             {
-                Utility.Log(LogStatus.Info, "ParseAssemblyName", $"Invalid Library: {assembly.Id} - {assembly.GithubUrl}", Logs.MainLog);
+                Utility.Log(LogStatus.Info, $"Invalid Library: {assembly.Id} - {assembly.GithubUrl}");
             }
 
             return null;
@@ -103,7 +103,7 @@ namespace LeagueSharp.Loader.Class.Installer
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "UpdateReferenceCache", e.Message, Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
             }
 
             Cache.Clear();

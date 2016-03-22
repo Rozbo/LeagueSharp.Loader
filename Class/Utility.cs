@@ -5,12 +5,11 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
-    #region
-
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -21,8 +20,6 @@ namespace LeagueSharp.Loader.Class
     using LeagueSharp.Loader.Data;
 
     using Application = System.Windows.Application;
-
-    #endregion
 
     public static class ListExtensions
     {
@@ -52,6 +49,8 @@ namespace LeagueSharp.Loader.Class
 
     public class Utility
     {
+        private static readonly Random Random = new Random();
+
         public static void ClearDirectory(string directory)
         {
             try
@@ -145,12 +144,11 @@ namespace LeagueSharp.Loader.Class
             {
                 var appconfig = ReadResourceString("LeagueSharp.Loader.Resources.DefaultProject.App.config");
                 var assemblyInfocs = ReadResourceString("LeagueSharp.Loader.Resources.DefaultProject.AssemblyInfo.cs");
-                var defaultProjectcsproj =
-                    ReadResourceString("LeagueSharp.Loader.Resources.DefaultProject.DefaultProject.csproj");
+                var defaultProjectcsproj = ReadResourceString("LeagueSharp.Loader.Resources.DefaultProject.DefaultProject.csproj");
                 var programcs = ReadResourceString("LeagueSharp.Loader.Resources.DefaultProject.Program.cs");
 
                 var targetPath = Path.Combine(
-                    Directories.LocalRepoDir, 
+                    Directories.LocalRepositoriesDirectory, 
                     assemblyName + Environment.TickCount.GetHashCode().ToString("X"));
                 Directory.CreateDirectory(targetPath);
 
@@ -250,11 +248,49 @@ namespace LeagueSharp.Loader.Class
             return Application.Current.FindResource(key).ToString();
         }
 
+        public static string GetUniqueFile(FileInfo file)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            var fileName = Path.GetFileNameWithoutExtension(file.Name);
+            var fileExt = Path.GetExtension(file.Extension);
+
+            if (file.Name == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(fileExt));
+            }
+
+            var len = Random.Next(Math.Min(4, fileName.Length), fileName.Length);
+            var newFile = GetUniqueKey(len) + fileExt;
+
+            Log(LogStatus.Debug, $"{file.Name} -> {newFile}");
+
+            return newFile;
+        }
+
+        public static string GetUniqueFile(string file)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            return GetUniqueFile(new FileInfo(file));
+        }
+
         public static string GetUniqueKey(int maxSize)
         {
-            var chars = new char[62];
-            chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+            var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
             var data = new byte[1];
+
             using (var crypto = new RNGCryptoServiceProvider())
             {
                 crypto.GetNonZeroBytes(data);
@@ -263,6 +299,7 @@ namespace LeagueSharp.Loader.Class
             }
 
             var result = new StringBuilder(maxSize);
+
             foreach (var b in data)
             {
                 result.Append(chars[b % chars.Length]);
@@ -271,7 +308,7 @@ namespace LeagueSharp.Loader.Class
             return result.ToString();
         }
 
-        public static void Log(string status, string source, string message, Log log)
+        public static void Log(LogStatus status, string message, [CallerMemberName]string source = null)
         {
             if (Application.Current == null)
             {
@@ -279,7 +316,7 @@ namespace LeagueSharp.Loader.Class
             }
 
             Application.Current.Dispatcher.Invoke(
-                () => log.Items.Add(new LogItem { Status = status, Source = source, Message = message }));
+                () => Logs.MainLog.Items.Add(new LogItem { Status = status.ToString(), Source = source, Message = message }));
         }
 
         public static string MakeValidFileName(string name)
@@ -455,23 +492,66 @@ namespace LeagueSharp.Loader.Class
             return "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
         }
 
-        internal static byte[] ReplaceFilling(byte[] input, byte[] pattern, byte[] replacement)
+        public static byte[] ReplaceFilling(string file, string searchFileName, string replaceFileName, Encoding encoding = null)
         {
-            if (pattern.Length == 0)
+            if (file == null)
             {
-                return input;
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            if (searchFileName == null)
+            {
+                throw new ArgumentNullException(nameof(searchFileName));
+            }
+
+            if (replaceFileName == null)
+            {
+                throw new ArgumentNullException(nameof(replaceFileName));
+            }
+
+            if (encoding == null)
+            {
+                encoding = Encoding.ASCII;
+            }
+
+            return ReplaceFilling(
+                File.ReadAllBytes(file),
+                encoding.GetBytes(Path.GetFileName(searchFileName)),
+                encoding.GetBytes(Path.GetFileName(replaceFileName)));
+        }
+
+        public static byte[] ReplaceFilling(byte[] content, byte[] search, byte[] replacement)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            if (search == null)
+            {
+                throw new ArgumentNullException(nameof(search));
+            }
+
+            if (replacement == null)
+            {
+                throw new ArgumentNullException(nameof(replacement));
+            }
+
+            if (search.Length == 0)
+            {
+                return content;
             }
 
             var result = new List<byte>();
 
             int i;
 
-            for (i = 0; i <= input.Length - pattern.Length; i++)
+            for (i = 0; i <= content.Length - search.Length; i++)
             {
                 var foundMatch = true;
-                for (var j = 0; j < pattern.Length; j++)
+                for (var j = 0; j < search.Length; j++)
                 {
-                    if (input[i + j] != pattern[j])
+                    if (content[i + j] != search[j])
                     {
                         foundMatch = false;
                         break;
@@ -481,22 +561,22 @@ namespace LeagueSharp.Loader.Class
                 if (foundMatch)
                 {
                     result.AddRange(replacement);
-                    for (var k = 0; k < pattern.Length - replacement.Length; k++)
+                    for (var k = 0; k < search.Length - replacement.Length; k++)
                     {
                         result.Add(0x00);
                     }
 
-                    i += pattern.Length - 1;
+                    i += search.Length - 1;
                 }
                 else
                 {
-                    result.Add(input[i]);
+                    result.Add(content[i]);
                 }
             }
 
-            for (; i < input.Length; i++)
+            for (; i < content.Length; i++)
             {
-                result.Add(input[i]);
+                result.Add(content[i]);
             }
 
             return result.ToArray();

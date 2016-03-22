@@ -54,26 +54,10 @@ namespace LeagueSharp.Loader.Class
             }
             catch (Exception e)
             {
-                Utility.Log(LogStatus.Error, "Updater", e.ToString(), Logs.MainLog);
+                Utility.Log(LogStatus.Error, e.Message);
             }
 
             return foundAssemblies;
-        }
-
-        public static LeagueSharpAssembly GetAssembly(string projectFile, string url = "")
-        {
-            LeagueSharpAssembly foundAssembly = null;
-            try
-            {
-                var name = Path.GetFileNameWithoutExtension(projectFile);
-                foundAssembly = new LeagueSharpAssembly(name, projectFile, url);
-            }
-            catch (Exception e)
-            {
-                Utility.Log(LogStatus.Error, "Updater GetAssembly", e.ToString(), Logs.MainLog);
-            }
-
-            return foundAssembly;
         }
     }
 }
