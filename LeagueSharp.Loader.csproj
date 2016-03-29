@@ -329,7 +329,7 @@
     <None Include="Properties\app.manifest" />
     <EmbeddedResource Include="Resources\DefaultProject\App.config" />
     <Resource Include="Resources\Entypo.ttf" />
-    <None Include="Resources\key.snk" />
+    <EmbeddedResource Include="Resources\key.snk" />
     <Page Include="Resources\Language\Italian.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -373,6 +373,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Entypo-license.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\sn.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -901,9 +901,9 @@ namespace LeagueSharp.Loader.Views
                         Application.Current.Dispatcher.InvokeAsync(
                             async () =>
                             {
-                                await this.UpdateAccount();
                                 this.icon_connected.Visibility = Visibility.Collapsed;
                                 this.icon_disconnected.Visibility = Visibility.Visible;
+                                await this.UpdateAccount();
                             });
                     };
 

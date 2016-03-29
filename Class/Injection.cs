@@ -8,6 +8,7 @@ namespace LeagueSharp.Loader.Class
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.IO.MemoryMappedFiles;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -82,18 +83,7 @@ namespace LeagueSharp.Loader.Class
                             }
                         }
 
-                        var supported = true;
-
-                        try
-                        {
-                            supported = Updater.IsSupported(Config.Instance.LeagueOfLegendsExePath).Result;
-                        }
-                        catch (Exception e)
-                        {
-                            Utility.Log(LogStatus.Error, e.Message);
-                        }
-
-                        if (injectDLL != null && supported)
+                        if (injectDLL != null && File.Exists(Directories.CoreRandomFilePath))
                         {
                             injectDLL(instance.Id, Directories.CoreRandomFilePath);
                             Utility.Log(LogStatus.Info, $"Inject {instance.Id} [{Directories.CoreRandomFilePath}]");

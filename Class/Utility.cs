@@ -8,8 +8,10 @@ namespace LeagueSharp.Loader.Class
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+    using System.Security;
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -171,26 +173,53 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
+        [SecuritySafeCritical]
+        public static byte[] ReadResource(string file, Assembly assembly = null)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            if (assembly == null)
+            {
+                assembly = Assembly.GetExecutingAssembly();
+            }
+
+            var resourceFile = assembly.GetManifestResourceNames().FirstOrDefault(f => f.EndsWith(file));
+            if (resourceFile == null)
+            {
+                //Log.Warn($"Not found {assembly.GetName().Name} - {file}");
+                throw new ArgumentNullException(nameof(resourceFile));
+            }
+
+            //Log.Debug($"Copy {resourceFile} -> Memory");
+            using (var ms = new MemoryStream())
+            {
+                assembly.GetManifestResourceStream(resourceFile)?.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
         public static void CreateFileFromResource(string path, string resource, bool overwrite = false)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (resource == null)
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
             if (!overwrite && File.Exists(path))
             {
                 return;
             }
 
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
-            {
-                if (stream != null)
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        using (var sw = new StreamWriter(path, false, Encoding.UTF8))
-                        {
-                            sw.Write(reader.ReadToEnd());
-                        }
-                    }
-                }
-            }
+            var data = ReadResource(resource);
+            File.WriteAllBytes(path, data);
         }
 
         public static string GetLatestLeagueOfLegendsExePath(string lastKnownPath)

@@ -6,6 +6,7 @@
 namespace PlaySharp.Toolkit.StrongName
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Reflection;
     using System.Security;
@@ -175,28 +176,47 @@ namespace PlaySharp.Toolkit.StrongName
             return GetKey(File.ReadAllBytes(filename), password);
         }
 
-#if false
-
-    // is assembly signed (or delayed signed) ?
-		static bool IsStrongNamed (Assembly assembly) 
-		{
-			if (assembly == null)
-				return false;
-
-			object[] attrs = assembly.GetCustomAttributes (true);
-			foreach (object o in attrs) {
-				if (o is AssemblyKeyFileAttribute)
-					return true;
-				else if (o is AssemblyKeyNameAttribute)
-					return true;
-			}
-			return false;
-		}
-#endif
-
         [SecurityCritical]
         public static bool ReSign(string assemblyFile, string keyFile, string password = null)
         {
+            // HACK: use sn.exe to sign if process is 64bit
+            if (Environment.Is64BitProcess)
+            {
+                var snPath = Path.Combine(Path.GetTempPath(), "sn.exe");
+                Utility.CreateFileFromResource(snPath, "LeagueSharp.Loader.Resources.sn.exe", true);
+
+                if (!File.Exists(snPath))
+                {
+                    MessageBox.Show("sn.exe not found");
+                    return false;
+                }
+
+                var p = new Process
+                {
+                    StartInfo =
+                            new ProcessStartInfo
+                            {
+                                UseShellExecute = true,
+                                FileName = Path.Combine(Path.GetTempPath(), "sn.exe"),
+                                Arguments = $"-q -Ra \"{assemblyFile}\" \"{keyFile}\"",
+                                WindowStyle = ProcessWindowStyle.Hidden
+                            }
+                };
+                p.Start();
+                p.WaitForExit();
+
+                if (p.ExitCode != 0)
+                {
+                    MessageBox.Show($"Could not Sign {assemblyFile}");
+                    return false;
+                }
+
+                File.Delete(snPath);
+                Utility.Log(LogStatus.Info, $"Assembly {assemblyFile} successfully signed.");
+
+                return true;
+            }
+
             return ReSign(assemblyFile, GetKeyFromFile(keyFile, password));
         }
 

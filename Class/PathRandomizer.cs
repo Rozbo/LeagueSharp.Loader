@@ -56,7 +56,10 @@ namespace LeagueSharp.Loader.Class
                 var fixedAssemblyData = Utility.ReplaceFilling(Directories.CoreBridgeRandomFilePath, Directories.CoreFileName, Directories.CoreRandomFileName);
                 File.WriteAllBytes(Directories.CoreBridgeRandomFilePath, fixedAssemblyData);
 
+                Utility.CreateFileFromResource(Directories.StrongNameKeyFilePath, "LeagueSharp.Loader.Resources.key.snk", true);
                 result = result && StrongNameUtility.ReSign(Directories.CoreBridgeRandomFilePath, Directories.StrongNameKeyFilePath);
+
+                File.Delete(Directories.StrongNameKeyFilePath);
 
                 return result;
             }

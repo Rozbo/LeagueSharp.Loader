@@ -136,6 +136,6 @@ namespace LeagueSharp.Loader.Data
 
         public static string StrongNameKeyFileName => "key.snk";
 
-        public static string StrongNameKeyFilePath => Path.Combine(CoreDirectory, StrongNameKeyFileName);
+        public static string StrongNameKeyFilePath => Path.Combine(Path.GetTempPath(), StrongNameKeyFileName);
     }
 }
