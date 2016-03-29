@@ -219,12 +219,16 @@ namespace LeagueSharp.Loader.Class
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
             private readonly string Password;
 
+            [MarshalAs(UnmanagedType.Bool)]
+            private readonly bool IsLoaded;
+
             public SharedMemoryLayout(string sandboxPath, string bootstrapPath, string user, string password)
             {
                 this.SandboxPath = sandboxPath;
                 this.BootstrapPath = bootstrapPath;
                 this.User = user;
                 this.Password = password;
+                this.IsLoaded = false;
             }
         }
     }
