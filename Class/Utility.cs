@@ -538,15 +538,10 @@ namespace LeagueSharp.Loader.Class
                 throw new ArgumentNullException(nameof(replaceFileName));
             }
 
-            if (encoding == null)
-            {
-                encoding = Encoding.ASCII;
-            }
-
             return ReplaceFilling(
                 File.ReadAllBytes(file),
-                encoding.GetBytes(Path.GetFileName(searchFileName)),
-                encoding.GetBytes(Path.GetFileName(replaceFileName)));
+                Encoding.ASCII.GetBytes(searchFileName),
+                Encoding.ASCII.GetBytes(replaceFileName));
         }
 
         public static byte[] ReplaceFilling(byte[] content, byte[] search, byte[] replacement)

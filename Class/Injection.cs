@@ -15,11 +15,10 @@ namespace LeagueSharp.Loader.Class
     using System.Text;
 
     using LeagueSharp.Loader.Data;
+    using LeagueSharp.Sandbox.Shared;
 
     public static class Injection
     {
-        public static MemoryMappedFile mmf = null;
-
         private static IntPtr bootstrapper;
 
         private static GetFilePathDelegate getFilePath;
@@ -27,8 +26,6 @@ namespace LeagueSharp.Loader.Class
         private static HasModuleDelegate hasModule;
 
         private static InjectDLLDelegate injectDLL;
-
-        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         private delegate bool GetFilePathDelegate(int processId, [Out] StringBuilder path, int size);
@@ -42,6 +39,8 @@ namespace LeagueSharp.Loader.Class
         public static bool IsInjected => LeagueProcess.Any(IsProcessInjected);
 
         public static bool PrepareDone { get; set; }
+
+        public static SharedMemory<SharedMemoryLayout> SharedMemory { get; set; }
 
         private static List<Process> LeagueProcess => Process.GetProcessesByName("League of Legends").ToList();
 
@@ -142,27 +141,12 @@ namespace LeagueSharp.Loader.Class
         {
             try
             {
-                mmf = MemoryMappedFile.CreateOrOpen(
-                    "Local\\LeagueSharpBootstrap", 
-                    260 * 2, 
-                    MemoryMappedFileAccess.ReadWrite);
-
-                var sharedMem = new SharedMemoryLayout(
-                    Directories.AppDomainRandomFilePath,
+                SharedMemory = new SharedMemory<SharedMemoryLayout>("LeagueSharpBootstrap");
+                SharedMemory.Data = new SharedMemoryLayout(
+                    Directories.AppDomainRandomFilePath, 
                     Directories.BootstrapRandomFilePath, 
                     Config.Instance.Username, 
                     Config.Instance.Password);
-
-                using (var writer = mmf.CreateViewAccessor())
-                {
-                    var len = Marshal.SizeOf(typeof(SharedMemoryLayout));
-                    var arr = new byte[len];
-                    var ptr = Marshal.AllocHGlobal(len);
-                    Marshal.StructureToPtr(sharedMem, ptr, true);
-                    Marshal.Copy(ptr, arr, 0, len);
-                    Marshal.FreeHGlobal(ptr);
-                    writer.WriteArray(0, arr, 0, arr.Length);
-                }
 
                 bootstrapper = Win32Imports.LoadLibrary(Directories.BootstrapFilePath);
                 if (!(bootstrapper != IntPtr.Zero))
@@ -203,33 +187,38 @@ namespace LeagueSharp.Loader.Class
                 Console.WriteLine(e);
             }
         }
+    }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
-        private struct SharedMemoryLayout
+    [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]
+    public struct SharedMemoryLayout
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public readonly string SandboxPath;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public readonly string BootstrapPath;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public readonly string User;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public readonly string Password;
+
+        [MarshalAs(UnmanagedType.Bool)]
+        public readonly bool IsLoaded;
+
+        public SharedMemoryLayout(
+            string sandboxPath, 
+            string bootstrapPath, 
+            string user, 
+            string password, 
+            bool isLoaded = false)
         {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-            private readonly string SandboxPath;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-            private readonly string BootstrapPath;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-            private readonly string User;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
-            private readonly string Password;
-
-            [MarshalAs(UnmanagedType.Bool)]
-            private readonly bool IsLoaded;
-
-            public SharedMemoryLayout(string sandboxPath, string bootstrapPath, string user, string password)
-            {
-                this.SandboxPath = sandboxPath;
-                this.BootstrapPath = bootstrapPath;
-                this.User = user;
-                this.Password = password;
-                this.IsLoaded = false;
-            }
+            this.SandboxPath = sandboxPath;
+            this.BootstrapPath = bootstrapPath;
+            this.User = user;
+            this.Password = password;
+            this.IsLoaded = isLoaded;
         }
     }
 }

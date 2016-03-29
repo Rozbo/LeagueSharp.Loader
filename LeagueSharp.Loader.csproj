@@ -148,6 +148,7 @@
     <Compile Include="Class\Shared\LoginCredentials.cs" />
     <Compile Include="Class\Shared\LSharpAssembly.cs" />
     <Compile Include="Class\Shared\ServiceFactory.cs" />
+    <Compile Include="Class\Shared\SharedMemory.cs" />
     <Compile Include="Class\StrongName\AssemblyInfo.cs" />
     <Compile Include="Class\EdgeTrigger.cs" />
     <Compile Include="Class\StrongName\StrongNameManager.cs" />

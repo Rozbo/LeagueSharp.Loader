@@ -11,9 +11,6 @@ namespace LeagueSharp.Loader.Class
 
     internal class Win32Imports
     {
-        [DllImport("user32.dll")]
-        public static extern bool EnumWindows(Injection.EnumWindowsProc enumProc, IntPtr lParam);
-
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindow(IntPtr ZeroOnly, string lpWindowName);
 

@@ -76,7 +76,7 @@ namespace LeagueSharp.Loader.Data
 
         public static string ConfigFilePath => Path.Combine(CurrentDirectory, ConfigFileName);
 
-        public static string CoreBridgeFileName => "Leaguesharp.dll";
+        public static string CoreBridgeFileName => "LeagueSharp.dll";
 
         public static string CoreBridgeFilePath => Path.Combine(CoreDirectory, CoreBridgeFileName);
 
@@ -97,7 +97,7 @@ namespace LeagueSharp.Loader.Data
 
         public static string CoreDirectory => Path.Combine(CurrentDirectory, "System");
 
-        public static string CoreFileName => "Leaguesharp.Core.dll";
+        public static string CoreFileName => "LeagueSharp.Core.dll";
 
         public static string CoreFilePath => Path.Combine(CoreDirectory, CoreFileName);
 
