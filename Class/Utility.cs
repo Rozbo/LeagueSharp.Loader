@@ -7,6 +7,7 @@ namespace LeagueSharp.Loader.Class
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -26,6 +27,19 @@ namespace LeagueSharp.Loader.Class
     public static class ListExtensions
     {
         private static readonly Random Rng = new Random();
+
+        public static void AddRange<T>(this ObservableCollection<T> oc, IEnumerable<T> collection)
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            foreach (var item in collection)
+            {
+                oc.Add(item);
+            }
+        }
 
         public static void ShuffleRandom<T>(this IList<T> list)
         {
@@ -173,34 +187,6 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
-        [SecuritySafeCritical]
-        public static byte[] ReadResource(string file, Assembly assembly = null)
-        {
-            if (file == null)
-            {
-                throw new ArgumentNullException(nameof(file));
-            }
-
-            if (assembly == null)
-            {
-                assembly = Assembly.GetExecutingAssembly();
-            }
-
-            var resourceFile = assembly.GetManifestResourceNames().FirstOrDefault(f => f.EndsWith(file));
-            if (resourceFile == null)
-            {
-                //Log.Warn($"Not found {assembly.GetName().Name} - {file}");
-                throw new ArgumentNullException(nameof(resourceFile));
-            }
-
-            //Log.Debug($"Copy {resourceFile} -> Memory");
-            using (var ms = new MemoryStream())
-            {
-                assembly.GetManifestResourceStream(resourceFile)?.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-
         public static void CreateFileFromResource(string path, string resource, bool overwrite = false)
         {
             if (path == null)
@@ -337,7 +323,7 @@ namespace LeagueSharp.Loader.Class
             return result.ToString();
         }
 
-        public static void Log(LogStatus status, string message, [CallerMemberName]string source = null)
+        public static void Log(LogStatus status, string message, [CallerMemberName] string source = null)
         {
             if (Application.Current == null)
             {
@@ -461,6 +447,34 @@ namespace LeagueSharp.Loader.Class
             }
         }
 
+        [SecuritySafeCritical]
+        public static byte[] ReadResource(string file, Assembly assembly = null)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            if (assembly == null)
+            {
+                assembly = Assembly.GetExecutingAssembly();
+            }
+
+            var resourceFile = assembly.GetManifestResourceNames().FirstOrDefault(f => f.EndsWith(file));
+            if (resourceFile == null)
+            {
+                // Log.Warn($"Not found {assembly.GetName().Name} - {file}");
+                throw new ArgumentNullException(nameof(resourceFile));
+            }
+
+            // Log.Debug($"Copy {resourceFile} -> Memory");
+            using (var ms = new MemoryStream())
+            {
+                assembly.GetManifestResourceStream(resourceFile)?.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
         public static string ReadResourceString(string resource)
         {
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
@@ -511,16 +525,6 @@ namespace LeagueSharp.Loader.Class
             return false;
         }
 
-        public static int VersionToInt(Version version)
-        {
-            return version.Major * 10000000 + version.Minor * 10000 + version.Build * 100 + version.Revision;
-        }
-
-        public static string WildcardToRegex(string pattern)
-        {
-            return "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
-        }
-
         public static byte[] ReplaceFilling(string file, string searchFileName, string replaceFileName, Encoding encoding = null)
         {
             if (file == null)
@@ -539,8 +543,8 @@ namespace LeagueSharp.Loader.Class
             }
 
             return ReplaceFilling(
-                File.ReadAllBytes(file),
-                Encoding.ASCII.GetBytes(searchFileName),
+                File.ReadAllBytes(file), 
+                Encoding.ASCII.GetBytes(searchFileName), 
                 Encoding.ASCII.GetBytes(replaceFileName));
         }
 
@@ -604,6 +608,16 @@ namespace LeagueSharp.Loader.Class
             }
 
             return result.ToArray();
+        }
+
+        public static int VersionToInt(Version version)
+        {
+            return version.Major * 10000000 + version.Minor * 10000 + version.Build * 100 + version.Revision;
+        }
+
+        public static string WildcardToRegex(string pattern)
+        {
+            return "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
         }
     }
 }

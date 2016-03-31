@@ -22,6 +22,8 @@ namespace LeagueSharp.Loader.Data
 
     using PlaySharp.Service.WebService.Model;
 
+    using Polly;
+
     using MessageBox = System.Windows.MessageBox;
 
     [XmlType(AnonymousType = true)]
@@ -678,9 +680,9 @@ namespace LeagueSharp.Loader.Data
                     Instance.UseCloudConfig &&
                     !string.IsNullOrEmpty(Instance.Username) &&
                     !string.IsNullOrEmpty(Instance.Password) &&
-                    WebService.Client.IsAuthenticated)
+                    WebService.IsAuthenticated)
                 {
-                    WebService.Client.CloudStore(Instance, "Config");
+                    WebService.CloudStore(Instance, "Config");
                 }
             }
             catch (Exception e)
@@ -759,15 +761,17 @@ namespace LeagueSharp.Loader.Data
                     return false;
                 }
 
-                if (!WebService.Client.Login(Instance.Username, Instance.Password))
+                if (!WebService.Login(Instance.Username, Instance.Password).Result)
                 {
                     Instance.Username = string.Empty;
                     Instance.Password = string.Empty;
                     return false;
                 }
 
-                var configContent = WebService.Client.Cloud("Config");
-                if (string.IsNullOrEmpty(configContent))
+                var configRequest = WebService.RequestCloud("Config");
+                var configContent = configRequest.Result;
+
+                if (configRequest.Outcome == OutcomeType.Failure)
                 {
                     return false;
                 }
@@ -781,7 +785,6 @@ namespace LeagueSharp.Loader.Data
                 config.RandomName = Instance.RandomName;
                 config.Username = Instance.Username;
                 config.Password = Instance.Password;
-                config.AuthKey = WebService.Client.LoginData.Token;
                 Instance = config;
 
                 Save(false);

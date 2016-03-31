@@ -18,9 +18,11 @@ namespace LeagueSharp.Sandbox.Shared
     public class SharedMemory<T> : IDisposable
         where T : struct
     {
-        private readonly string name;
-
         private readonly string fileName;
+
+        private readonly string mutexName;
+
+        private readonly string name;
 
         private readonly int size;
 
@@ -31,8 +33,6 @@ namespace LeagueSharp.Sandbox.Shared
         private MemoryMappedFile mmf;
 
         private Mutex mutex;
-
-        private readonly string mutexName;
 
         public SharedMemory(string name, int size = 0, bool autoOpen = true)
         {

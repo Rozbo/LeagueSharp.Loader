@@ -31,7 +31,8 @@ namespace LeagueSharp.Loader.Class
                     if (!string.IsNullOrEmpty(url))
                     {
                         var entry = Config.Instance.DatabaseAssemblies?.FirstOrDefault(a => a.GithubUrl.Contains(url) && a.Name == name)
-                                    ?? Config.Instance.DatabaseAssemblies?.FirstOrDefault(a => a.GithubUrl.Contains(url) && Path.GetFileNameWithoutExtension(a.GithubUrl) == name);
+                                    ?? Config.Instance.DatabaseAssemblies?.FirstOrDefault(
+                                        a => a.GithubUrl.Contains(url) && Path.GetFileNameWithoutExtension(a.GithubUrl) == name);
 
                         if (entry != null)
                         {

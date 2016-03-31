@@ -107,7 +107,7 @@ namespace LeagueSharp.Loader.Data
 
         Error, 
 
-        Debug,
+        Debug, 
 
         Warning
     }

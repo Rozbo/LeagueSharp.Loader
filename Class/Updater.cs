@@ -20,6 +20,8 @@ namespace LeagueSharp.Loader.Class
 
     using PlaySharp.Service.WebService.Model;
 
+    using Polly;
+
     #endregion
 
     internal class Updater
@@ -50,46 +52,6 @@ namespace LeagueSharp.Loader.Class
             Unknown
         }
 
-        public static async Task<bool> IsSupported(string path)
-        {
-            if (Directory.Exists(Path.Combine(Directories.CurrentDirectory, "iwanttogetbanned")))
-            {
-                return true;
-            }
-
-            try
-            {
-                if (!WebService.Client.IsAuthenticated)
-                {
-                    Utility.Log(LogStatus.Error, "WebService authentication failed");
-                    return false;
-                }
-
-                var leagueChecksum = Utility.Md5Checksum(path);
-                var coreChecksum = Utility.Md5Checksum(Directories.CoreFilePath);
-                var core = await WebService.Client.CoreAsync(leagueChecksum);
-
-                if (leagueChecksum == "-1")
-                {
-                    return false;
-                }
-
-                if (core == null)
-                {
-                    Utility.Log(LogStatus.Error, "Failed to receive Core version from WebService");
-                    return false;
-                }
-
-                return core.HashCore == coreChecksum;
-            }
-            catch (Exception e)
-            {
-                Utility.Log(LogStatus.Error, e.Message);
-            }
-
-            return false;
-        }
-
         public static async Task<UpdateResponse> UpdateCore(string path, bool showMessages)
         {
             if (Directory.Exists(Path.Combine(Directories.CurrentDirectory, "iwanttogetbanned")))
@@ -99,7 +61,7 @@ namespace LeagueSharp.Loader.Class
 
             try
             {
-                if (!WebService.Client.IsAuthenticated)
+                if (!WebService.IsAuthenticated)
                 {
                     Utility.Log(LogStatus.Error, "WebService authentication failed");
                     return new UpdateResponse(CoreUpdateState.Unknown, "WebService authentication failed");
@@ -109,9 +71,10 @@ namespace LeagueSharp.Loader.Class
                 var leagueChecksum = Utility.Md5Checksum(path);
                 var coreChecksum = Utility.Md5Checksum(Directories.CoreFilePath);
                 var coreBridgeChecksum = Utility.Md5Checksum(Directories.CoreBridgeFilePath);
-                var core = await WebService.Client.CoreAsync(leagueChecksum);
+                var coreRequest = await WebService.RequestCore(leagueChecksum);
+                var core = coreRequest.Result;
 
-                if (core == null)
+                if (coreRequest.Outcome == OutcomeType.Failure)
                 {
                     return new UpdateResponse(
                         CoreUpdateState.Maintenance, 
@@ -193,17 +156,15 @@ namespace LeagueSharp.Loader.Class
 
         public static async Task UpdateRepositories()
         {
-            try
+            var repos = await WebService.RequestRepositories();
+            if (repos.Outcome == OutcomeType.Failure)
             {
-                var repos = await WebService.Client.RepositoriesAsync();
+                Utility.Log(LogStatus.Error, "Failed to receive repositories");
+                return;
+            }
 
-                Config.Instance.KnownRepositories = new ObservableCollection<RepositoryEntry>(repos.Where(r => r.Display));
-                Config.Instance.BlockedRepositories = new ObservableCollection<RepositoryEntry>(repos.Where(r => r.HasRedirect));
-            }
-            catch (Exception e)
-            {
-                Utility.Log(LogStatus.Error, e.Message);
-            }
+            Config.Instance.KnownRepositories = new ObservableCollection<RepositoryEntry>(repos.Result.Where(r => r.Display));
+            Config.Instance.BlockedRepositories = new ObservableCollection<RepositoryEntry>(repos.Result.Where(r => r.HasRedirect));
         }
 
         public static async Task UpdateWebService()
@@ -220,7 +181,7 @@ namespace LeagueSharp.Loader.Class
                             var entries = WebService.Assemblies.Where(a => a.Approved && !a.Deleted).ToList();
                             entries.ShuffleRandom();
 
-                            assemblies = new ObservableCollection<AssemblyEntry>(entries);
+                            assemblies.AddRange(entries);
                         }
                         catch (Exception e)
                         {

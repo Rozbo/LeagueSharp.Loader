@@ -3,10 +3,6 @@
 //   Copyright (c) LeagueSharp.Loader. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------
-// Wraps System.Windows.Forms.OpenFileDialog to make it present
-// a vista-style dialog.
-// ------------------------------------------------------------------
 namespace LeagueSharp.Loader.Class
 {
     using System;

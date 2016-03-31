@@ -25,111 +25,26 @@ namespace PlaySharp.Toolkit.StrongName
     public static class StrongNameUtility
     {
         [SecurityCritical]
-        public static bool LoadConfig(bool quiet)
+        public static bool Compare(byte[] value1, byte[] value2)
         {
-            var config = typeof(Environment).GetMethod("GetMachineConfigPath", BindingFlags.Static | BindingFlags.NonPublic);
-
-            if (config != null)
+            if ((value1 == null) || (value2 == null))
             {
-                var path = (string)config.Invoke(null, null);
+                return false;
+            }
 
-                var exist = File.Exists(path);
-                if (!quiet && !exist)
+            var result = value1.Length == value2.Length;
+            if (result)
+            {
+                for (var i = 0; i < value1.Length; i++)
                 {
-                    Console.WriteLine("Couldn't find machine.config");
-                }
-
-                StrongNameManager.LoadConfig(path);
-                return exist;
-            }
-
-            // default CSP
-            return false;
-        }
-
-        [SecurityCritical]
-        public static int SaveConfig()
-        {
-            // default CSP
-            return 1;
-        }
-
-        [SecurityCritical]
-        public static byte[] ReadFromFile(string fileName)
-        {
-            byte[] data = null;
-            var fs = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-            try
-            {
-                data = new byte[fs.Length];
-                fs.Read(data, 0, data.Length);
-            }
-            finally
-            {
-                fs.Close();
-            }
-
-            return data;
-        }
-
-        [SecurityCritical]
-        public static void WriteToFile(string fileName, byte[] data)
-        {
-            var fs = File.Open(fileName, FileMode.Create, FileAccess.Write);
-            try
-            {
-                fs.Write(data, 0, data.Length);
-            }
-            finally
-            {
-                fs.Close();
-            }
-        }
-
-        [SecurityCritical]
-        public static void WriteCSVToFile(string fileName, byte[] data, string mask)
-        {
-            var sw = File.CreateText(fileName);
-            try
-            {
-                for (var i = 0; i < data.Length; i++)
-                {
-                    if (mask[0] == 'X')
+                    if (value1[i] != value2[i])
                     {
-                        sw.Write("0x");
+                        return false;
                     }
-
-                    sw.Write(data[i].ToString(mask));
-                    sw.Write(", ");
-                }
-            }
-            finally
-            {
-                sw.Close();
-            }
-        }
-
-        [SecurityCritical]
-        private static string ToString(byte[] data)
-        {
-            var sb = new StringBuilder();
-            for (var i = 0; i < data.Length; i++)
-            {
-                if ((i % 39 == 0) && (data.Length > 39))
-                {
-                    sb.Append(Environment.NewLine);
-                }
-
-                sb.Append(data[i].ToString("x2"));
-                if (i > 2080)
-                {
-                    // ensure we can display up to 16384 bits keypair
-                    sb.Append(" !!! TOO LONG !!!");
-                    break;
                 }
             }
 
-            return sb.ToString();
+            return result;
         }
 
         [SecurityCritical]
@@ -177,6 +92,47 @@ namespace PlaySharp.Toolkit.StrongName
         }
 
         [SecurityCritical]
+        public static bool LoadConfig(bool quiet)
+        {
+            var config = typeof(Environment).GetMethod("GetMachineConfigPath", BindingFlags.Static | BindingFlags.NonPublic);
+
+            if (config != null)
+            {
+                var path = (string)config.Invoke(null, null);
+
+                var exist = File.Exists(path);
+                if (!quiet && !exist)
+                {
+                    Console.WriteLine("Couldn't find machine.config");
+                }
+
+                StrongNameManager.LoadConfig(path);
+                return exist;
+            }
+
+            // default CSP
+            return false;
+        }
+
+        [SecurityCritical]
+        public static byte[] ReadFromFile(string fileName)
+        {
+            byte[] data = null;
+            var fs = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            try
+            {
+                data = new byte[fs.Length];
+                fs.Read(data, 0, data.Length);
+            }
+            finally
+            {
+                fs.Close();
+            }
+
+            return data;
+        }
+
+        [SecurityCritical]
         public static bool ReSign(string assemblyFile, string keyFile, string password = null)
         {
             // HACK: use sn.exe to sign if process is 64bit
@@ -192,16 +148,16 @@ namespace PlaySharp.Toolkit.StrongName
                 }
 
                 var p = new Process
-                {
-                    StartInfo =
-                            new ProcessStartInfo
-                            {
-                                UseShellExecute = true,
-                                FileName = Path.Combine(Path.GetTempPath(), "sn.exe"),
-                                Arguments = $"-q -Ra \"{assemblyFile}\" \"{keyFile}\"",
-                                WindowStyle = ProcessWindowStyle.Hidden
-                            }
-                };
+                        {
+                            StartInfo =
+                                new ProcessStartInfo
+                                {
+                                    UseShellExecute = true, 
+                                    FileName = Path.Combine(Path.GetTempPath(), "sn.exe"), 
+                                    Arguments = $"-q -Ra \"{assemblyFile}\" \"{keyFile}\"", 
+                                    WindowStyle = ProcessWindowStyle.Hidden
+                                }
+                        };
                 p.Start();
                 p.WaitForExit();
 
@@ -288,6 +244,13 @@ namespace PlaySharp.Toolkit.StrongName
         }
 
         [SecurityCritical]
+        public static int SaveConfig()
+        {
+            // default CSP
+            return 1;
+        }
+
+        [SecurityCritical]
         public static int Verify(string assemblyName, bool forceVerification = true)
         {
             // this doesn't load the assembly (well it unloads it ;)
@@ -342,26 +305,63 @@ namespace PlaySharp.Toolkit.StrongName
         }
 
         [SecurityCritical]
-        public static bool Compare(byte[] value1, byte[] value2)
+        public static void WriteCSVToFile(string fileName, byte[] data, string mask)
         {
-            if ((value1 == null) || (value2 == null))
+            var sw = File.CreateText(fileName);
+            try
             {
-                return false;
-            }
-
-            var result = value1.Length == value2.Length;
-            if (result)
-            {
-                for (var i = 0; i < value1.Length; i++)
+                for (var i = 0; i < data.Length; i++)
                 {
-                    if (value1[i] != value2[i])
+                    if (mask[0] == 'X')
                     {
-                        return false;
+                        sw.Write("0x");
                     }
+
+                    sw.Write(data[i].ToString(mask));
+                    sw.Write(", ");
+                }
+            }
+            finally
+            {
+                sw.Close();
+            }
+        }
+
+        [SecurityCritical]
+        public static void WriteToFile(string fileName, byte[] data)
+        {
+            var fs = File.Open(fileName, FileMode.Create, FileAccess.Write);
+            try
+            {
+                fs.Write(data, 0, data.Length);
+            }
+            finally
+            {
+                fs.Close();
+            }
+        }
+
+        [SecurityCritical]
+        private static string ToString(byte[] data)
+        {
+            var sb = new StringBuilder();
+            for (var i = 0; i < data.Length; i++)
+            {
+                if ((i % 39 == 0) && (data.Length > 39))
+                {
+                    sb.Append(Environment.NewLine);
+                }
+
+                sb.Append(data[i].ToString("x2"));
+                if (i > 2080)
+                {
+                    // ensure we can display up to 16384 bits keypair
+                    sb.Append(" !!! TOO LONG !!!");
+                    break;
                 }
             }
 
-            return result;
+            return sb.ToString();
         }
     }
 }

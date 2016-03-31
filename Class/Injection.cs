@@ -9,7 +9,6 @@ namespace LeagueSharp.Loader.Class
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.IO.MemoryMappedFiles;
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;

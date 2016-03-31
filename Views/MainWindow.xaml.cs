@@ -35,6 +35,8 @@ namespace LeagueSharp.Loader.Views
     using PlaySharp.Service.WebService.Model;
     using PlaySharp.Toolkit.Helper;
 
+    using Polly;
+
     public partial class MainWindow : INotifyPropertyChanged
     {
         public const int TAB_ASSEMBLIES = 2;
@@ -400,7 +402,7 @@ namespace LeagueSharp.Loader.Views
                 this.UpdateFilters();
 
                 // Try to login with the saved credentials.
-                if (!WebService.Client.IsAuthenticated)
+                if (!WebService.IsAuthenticated)
                 {
                     splash.Close(TimeSpan.FromMilliseconds(300));
 
@@ -471,30 +473,34 @@ namespace LeagueSharp.Loader.Views
 
                 if (loader)
                 {
-                    var loaderVersionCheckResult = await WebService.Client.LoaderVersionAsync();
-
-                    try
+                    var loaderVersionRequest = await WebService.RequestLoaderVersionAsync();
+                    if (loaderVersionRequest.Outcome == OutcomeType.Successful)
                     {
-                        if (File.Exists(Updater.SetupFile))
+                        var loaderVersion = loaderVersionRequest.Result;
+
+                        try
                         {
-                            Thread.Sleep(1000);
-                            File.Delete(Updater.SetupFile);
+                            if (File.Exists(Updater.SetupFile))
+                            {
+                                Thread.Sleep(1000);
+                                File.Delete(Updater.SetupFile);
+                            }
                         }
-                    }
-                    catch
-                    {
-                        MessageBox.Show(Utility.GetMultiLanguageText("FailedToDelete"));
-                        Environment.Exit(0);
-                    }
-
-                    if (loaderVersionCheckResult.Version > Assembly.GetExecutingAssembly().GetName().Version)
-                    {
-                        // Update the loader only when we are not injected to be able to replace the core files.
-                        if (!Injection.IsInjected)
+                        catch
                         {
-                            Console.WriteLine("Update Loader");
-                            Updater.Updating = true;
-                            await Updater.UpdateLoader(loaderVersionCheckResult.Url);
+                            MessageBox.Show(Utility.GetMultiLanguageText("FailedToDelete"));
+                            Environment.Exit(0);
+                        }
+
+                        if (loaderVersion.Version > Assembly.GetExecutingAssembly().GetName().Version)
+                        {
+                            // Update the loader only when we are not injected to be able to replace the core files.
+                            if (!Injection.IsInjected)
+                            {
+                                Console.WriteLine("Update Loader");
+                                Updater.Updating = true;
+                                await Updater.UpdateLoader(loaderVersion.Url);
+                            }
                         }
                     }
                 }
@@ -917,6 +923,8 @@ namespace LeagueSharp.Loader.Views
                             {
                                 Injection.Pulse();
                                 trigger.Value = Injection.IsInjected;
+
+                                Console.WriteLine(Injection.SharedMemory.Data.IsLoaded);
                             }
                         }
                         catch
@@ -1241,7 +1249,7 @@ namespace LeagueSharp.Loader.Views
                 await this.ShowMessageAsync("Login", string.Format(Utility.GetMultiLanguageText("FailedToLogin"), loginResult.Item2));
 
                 Utility.Log(
-                    LogStatus.Error,
+                    LogStatus.Error, 
                     string.Format(
                         Utility.GetMultiLanguageText("LoginError"), 
                         result.Username, 
@@ -1281,6 +1289,7 @@ namespace LeagueSharp.Loader.Views
         private void TosAccept_Click(object sender, RoutedEventArgs e)
         {
             Config.Instance.TosAccepted = true;
+            NewsButton_OnClick(null, null);
         }
 
         private void TosButton_OnClick(object sender, RoutedEventArgs e)
@@ -1363,7 +1372,14 @@ namespace LeagueSharp.Loader.Views
 
                 this.LastAccountUpdate = DateTime.Now;
 
-                var account = await WebService.Client.AccountAsync();
+                var accountRequest = await WebService.RequestAccountAsync();
+                if (accountRequest.Outcome == OutcomeType.Failure)
+                {
+                    this.Header.Text = $"L# {Assembly.GetExecutingAssembly().GetName().Version}";
+                    return;
+                }
+
+                var account = accountRequest.Result;
                 var text = "Normal";
 
                 if (account.IsSubscriber)
@@ -1381,8 +1397,7 @@ namespace LeagueSharp.Loader.Views
                     text = "Dev";
                 }
 
-                this.Header.Text =
-                    $"L# - {account.DisplayName}/{text} - {account.GamesPlayed}/{account.MaxGames} - {Assembly.GetExecutingAssembly().GetName().Version}";
+                this.Header.Text = $"L# - {account.DisplayName}/{text} - {account.GamesPlayed}/{account.MaxGames} - {Assembly.GetExecutingAssembly().GetName().Version}";
             }
             catch
             {

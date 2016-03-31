@@ -26,10 +26,10 @@
     <system:String x:Key="DBColumnDescription">Açıklama</system:String>
     <system:String x:Key="DBColumnAuthor">Gönderen</system:String>
     <system:String x:Key="DBColumnScore">Puan</system:String>
-    
+
     <!-- MainWindow Assemblies DB datagrid Menu -->
     <system:String x:Key="InstallFromDB">Yükle</system:String>
-    
+
     <!-- MainWindow Assemblies datagrid Menu -->
     <system:String x:Key="MenuUpdateAndCompile">Güncelle ve Derle</system:String>
     <system:String x:Key="MenuRemove">Kaldır</system:String>
@@ -86,7 +86,7 @@
     <system:String x:Key="EnableDebug">Modül Hata Ayıklamasını Etkinleştir (Performansı düşürebilir)</system:String>
 
     <system:String x:Key="CloudConfig">Bulut Entegrasyonunu Kullan</system:String>
-    
+
     <system:String x:Key="Inject">Enjekte Et</system:String>
     <system:String x:Key="Logout">Çıkış Yap</system:String>
     <system:String x:Key="DefaultHotkeys">Geri Yükle</system:String>
@@ -154,5 +154,5 @@
     <system:String x:Key="UpdateUnknown">LeagueSharp'ın güncel olup olmadığı bilinmiyor, bu genellikle joduska.me erişilemiyor anlamına gelir.</system:String>
     <system:String x:Key="NotUpdateNeeded">LeagueSharp kurulu League of Legends versiyonuna göre güncel.</system:String>
     <system:String x:Key="RandomizationFailed">Kütüphane isimleri karıştırılamadı.</system:String>
-    
+
 </ResourceDictionary>

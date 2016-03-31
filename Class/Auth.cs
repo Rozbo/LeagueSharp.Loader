@@ -24,7 +24,7 @@ namespace LeagueSharp.Loader.Class
 
             try
             {
-                if (await WebService.Client.LoginAsync(user, hash))
+                if (await WebService.Login(user, hash))
                 {
                     return new Tuple<bool, string>(true, "Success");
                 }

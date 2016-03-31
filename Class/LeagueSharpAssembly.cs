@@ -75,7 +75,8 @@ namespace LeagueSharp.Loader.Class
                     if (string.IsNullOrEmpty(this.author))
                     {
                         var assembly =
-                            WebService.Assemblies.FirstOrDefault(a => Path.GetFileName(a.GithubUrl) == Path.GetFileName(this.PathToProjectFile) && a.GithubUrl.Contains(this.SvnUrl) );
+                            WebService.Assemblies.FirstOrDefault(
+                                a => Path.GetFileName(a.GithubUrl) == Path.GetFileName(this.PathToProjectFile) && a.GithubUrl.Contains(this.SvnUrl));
                         if (assembly != null)
                         {
                             this.author = assembly.AuthorName;

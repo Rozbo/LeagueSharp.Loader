@@ -21,6 +21,8 @@ namespace LeagueSharp.Loader.Views
     using LeagueSharp.Loader.Class;
     using LeagueSharp.Loader.Data;
 
+    using Polly;
+
     #endregion
 
     public enum UpdateAction
@@ -139,46 +141,61 @@ namespace LeagueSharp.Loader.Views
         {
             this.UpdateMessage = "Core " + this.FindResource("Updating");
 
-            using (var client = new WebClient())
+            try
             {
-                client.DownloadProgressChanged += this.WebClientOnDownloadProgressChanged;
-
-                try
+                if (File.Exists(Updater.UpdateZip))
                 {
-                    if (File.Exists(Updater.UpdateZip))
-                    {
-                        File.Delete(Updater.UpdateZip);
-                        Thread.Sleep(500);
-                    }
+                    File.Delete(Updater.UpdateZip);
+                    Thread.Sleep(500);
+                }
 
-                    await client.DownloadFileTaskAsync(this.UpdateUrl, Updater.UpdateZip);
+                var downloadResult = await Policy
+                                               .Handle<Exception>()
+                                               .WaitAndRetryAsync(
+                                                   3, 
+                                                   retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), 
+                                                   (exception, timeSpan, context) => { Utility.Log(LogStatus.Error, $"ReTry {exception.Message}"); })
+                                               .ExecuteAndCaptureAsync(
+                                                   () =>
+                                                   {
+                                                       using (var client = new WebClient())
+                                                       {
+                                                           client.DownloadProgressChanged += this.WebClientOnDownloadProgressChanged;
+                                                           return client.DownloadFileTaskAsync(this.UpdateUrl, Updater.UpdateZip);
+                                                       }
+                                                   }, 
+                                                   true);
 
-                    using (var archive = ZipFile.OpenRead(Updater.UpdateZip))
+                if (downloadResult.Outcome == OutcomeType.Failure)
+                {
+                    return false;
+                }
+
+                using (var archive = ZipFile.OpenRead(Updater.UpdateZip))
+                {
+                    foreach (var entry in archive.Entries)
                     {
-                        foreach (var entry in archive.Entries)
+                        try
                         {
-                            try
-                            {
-                                File.Delete(Path.Combine(Directories.CoreDirectory, entry.FullName));
-                                entry.ExtractToFile(Path.Combine(Directories.CoreDirectory, entry.FullName), true);
-                            }
-                            catch
-                            {
-                                File.WriteAllText(Directories.CoreFilePath, "-"); // force an update
-                                return false;
-                            }
+                            File.Delete(Path.Combine(Directories.CoreDirectory, entry.FullName));
+                            entry.ExtractToFile(Path.Combine(Directories.CoreDirectory, entry.FullName), true);
+                        }
+                        catch
+                        {
+                            File.WriteAllText(Directories.CoreFilePath, "-"); // force an update
+                            return false;
                         }
                     }
-
-                    PathRandomizer.CopyFiles();
-                    Config.Instance.TosAccepted = false;
-
-                    return true;
                 }
-                catch (Exception e)
-                {
-                    MessageBox.Show(Utility.GetMultiLanguageText("FailedToDownload") + e);
-                }
+
+                PathRandomizer.CopyFiles();
+                Config.Instance.TosAccepted = false;
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(Utility.GetMultiLanguageText("FailedToDownload") + e);
             }
 
             return false;
@@ -188,19 +205,27 @@ namespace LeagueSharp.Loader.Views
         {
             this.UpdateMessage = "Loader " + this.FindResource("Updating");
 
-            using (var client = new WebClient())
-            {
-                client.DownloadProgressChanged += this.WebClientOnDownloadProgressChanged;
+            var downloadResult = await Policy
+                                           .Handle<Exception>()
+                                           .WaitAndRetryAsync(
+                                               3, 
+                                               retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), 
+                                               (exception, timeSpan, context) => { Utility.Log(LogStatus.Error, $"ReTry {exception.Message}"); })
+                                           .ExecuteAndCaptureAsync(
+                                               () =>
+                                               {
+                                                   using (var client = new WebClient())
+                                                   {
+                                                       client.DownloadProgressChanged += this.WebClientOnDownloadProgressChanged;
+                                                       return client.DownloadFileTaskAsync(this.UpdateUrl, Updater.SetupFile);
+                                                   }
+                                               }, 
+                                               true);
 
-                try
-                {
-                    await client.DownloadFileTaskAsync(this.UpdateUrl, Updater.SetupFile);
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show(Utility.GetMultiLanguageText("LoaderUpdateFailed") + e);
-                    Environment.Exit(0);
-                }
+            if (downloadResult.Outcome == OutcomeType.Failure)
+            {
+                MessageBox.Show(Utility.GetMultiLanguageText("LoaderUpdateFailed") + "\n" + downloadResult.FinalException);
+                Environment.Exit(0);
             }
 
             Config.Instance.TosAccepted = false;

@@ -253,7 +253,8 @@ namespace LeagueSharp.Loader
                     var info = new ProcessStartInfo
                                {
                                    Arguments =
-                                       "/C choice /C Y /N /D Y /T 1 & Del \"" + Directories.LoaderRandomFilePath + "\" \"" + Directories.LoaderRandomConfigFilePath
+                                       "/C choice /C Y /N /D Y /T 1 & Del \"" + Directories.LoaderRandomFilePath + "\" \""
+                                       + Directories.LoaderRandomConfigFilePath
                                        + "\" \"" + Directories.LoaderRandomPdbFilePath + "\"", 
                                    WindowStyle = ProcessWindowStyle.Hidden, 
                                    CreateNoWindow = true, 

@@ -7,9 +7,6 @@ namespace LeagueSharp.Loader.Class
 {
     using System;
     using System.IO;
-    using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Windows;
 
     using LeagueSharp.Loader.Data;
 
@@ -34,26 +31,29 @@ namespace LeagueSharp.Loader.Class
             try
             {
                 result = result && Utility.OverwriteFile(
-                             Directories.BootstrapFilePath, 
-                             Directories.BootstrapRandomFilePath, 
-                             true);
+                    Directories.BootstrapFilePath, 
+                    Directories.BootstrapRandomFilePath, 
+                    true);
 
                 result = result && Utility.OverwriteFile(
-                             Directories.AppDomainFilePath, 
-                             Directories.AppDomainRandomFilePath, 
-                             true);
+                    Directories.AppDomainFilePath, 
+                    Directories.AppDomainRandomFilePath, 
+                    true);
 
                 result = result && Utility.OverwriteFile(
-                             Directories.CoreFilePath, 
-                             Directories.CoreRandomFilePath, 
-                             true);
+                    Directories.CoreFilePath, 
+                    Directories.CoreRandomFilePath, 
+                    true);
 
                 result = result && Utility.OverwriteFile(
-                             Directories.CoreBridgeFilePath,
-                             Directories.CoreBridgeRandomFilePath,
-                             true);
+                    Directories.CoreBridgeFilePath, 
+                    Directories.CoreBridgeRandomFilePath, 
+                    true);
 
-                var fixedAssemblyData = Utility.ReplaceFilling(Directories.CoreBridgeRandomFilePath, Directories.CoreFileName, Directories.CoreRandomFileName);
+                var fixedAssemblyData = Utility.ReplaceFilling(
+                    Directories.CoreBridgeRandomFilePath, 
+                    Directories.CoreFileName, 
+                    Directories.CoreRandomFileName);
                 File.WriteAllBytes(Directories.CoreBridgeRandomFilePath, fixedAssemblyData);
 
                 Utility.CreateFileFromResource(Directories.StrongNameKeyFilePath, "LeagueSharp.Loader.Resources.key.snk", true);
