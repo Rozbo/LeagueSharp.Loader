@@ -21,6 +21,8 @@ de.buildtools2015_size=24,5 MB
 // {2BDE4E1E-FE85-471C-8419-35CC61408E27} Microsoft Build Tools 14.0 (amd64)
 // {477F7BAD-67AD-4E4F-B704-4AF4F44CB9BD} Microsoft Build Tools 14.0 (x86)
 
+// {165C53A6-4B2E-4BE2-89BF-75D2952DE243} Microsoft Build Tools 14.0 (amd64) 14.0.24730
+
 
 [Code]
 const
@@ -38,7 +40,8 @@ begin
 		   msiproduct('{D1437F51-786A-4F57-A99C-F8E94FBA1BD8}') or 
 		   msiproduct('{118E863A-F6E9-4A5B-8C61-56B8B752A200}') or 
 		   msiproduct('{F86F966D-0332-4444-B4D0-FAE76B58D61F}') or 
-		   msiproduct('{477F7BAD-67AD-4E4F-B704-4AF4F44CB9BD}') then 
+		   msiproduct('{477F7BAD-67AD-4E4F-B704-4AF4F44CB9BD}') or
+		   msiproduct('{165C53A6-4B2E-4BE2-89BF-75D2952DE243}') then 
 		begin
 			missing := False;
 		end;

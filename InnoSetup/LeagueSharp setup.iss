@@ -19,6 +19,8 @@ Uninstallable=no
 OutputDir=Output\
 OutputBaseFilename=LeagueSharp-update-{#MyAppVersion}
 PrivilegesRequired=admin
+DisableProgramGroupPage=yes
+AllowNoIcons=yes
 
 [Files]
 ;Loader
@@ -59,6 +61,12 @@ Root: HKCR; Subkey: "ls\shell\open\command"; ValueType: "string"; ValueData: """
 
 [Run]
 Filename: {app}\{#MyAppExeName}; Flags: shellexec nowait; 
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+
+[Icons]
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Code]
 function InitializeSetup(): Boolean;
