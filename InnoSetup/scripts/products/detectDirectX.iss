@@ -5,6 +5,12 @@ en.directx_size=288 KB
 de.directx_size=288 KB
 
 [Code]
+
+function LoadLibrary(lpFilename : String) : LongInt;
+external 'LoadLibraryW@kernel32.dll stdcall delayload';
+function FreeLibrary(hModule : LongInt) : BOOL;
+external 'FreeLibrary@kernel32.dll stdcall delayload';
+
 const
     directx_url = 'http://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe';
 
@@ -84,9 +90,13 @@ begin
 end;
 
 procedure directX();
+var
+ h: LongInt;
 begin
   // in this case program needs at least directx 9.0
-  if CompareDirectXVersion( GetDirectXVersion(), '4.09.00.0904') < 0 then
+  h := LoadLibrary('d3dx9_43.dll');
+  
+  if (CompareDirectXVersion( GetDirectXVersion(), '4.09.00.0904') < 0) or (h = 0) then
   begin
                 AddProduct('dxwebsetup.exe',
                     '',
@@ -94,5 +104,11 @@ begin
                     CustomMessage('directx_size'),
                     directx_url,
                     false, false);
+					
+  end;
+  
+  if h <> 0 then
+  begin
+    FreeLibrary(h);
   end;
 end;
