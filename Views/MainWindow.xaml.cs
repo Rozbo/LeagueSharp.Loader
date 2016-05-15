@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainWindow.xaml.cs" company="LeagueSharp.Loader">
 //   Copyright (c) LeagueSharp.Loader. All rights reserved.
 // </copyright>
@@ -1203,7 +1203,7 @@ namespace LeagueSharp.Loader.Views
             if (count > 0)
             {
                 var uri = LSUriScheme.FullName + (count == 1 ? "project" : "projectGroup") + "/" + stringToAppend;
-                Clipboard.SetText(uri);
+                Clipboard.SetText(uri.Replace(" ", "%20"));
                 this.ShowTextMessage(
                     Utility.GetMultiLanguageText("MenuShare"), 
                     Utility.GetMultiLanguageText("ShareText"));
