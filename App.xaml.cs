@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="App.xaml.cs" company="LeagueSharp.Loader">
 //   Copyright (c) LeagueSharp.Loader. All rights reserved.
 // </copyright>
@@ -61,7 +61,6 @@ namespace LeagueSharp.Loader
 #endif
 
             this.Localize();
-
             if (Config.Instance.SelectedColor != null)
             {
                 ThemeManager.ChangeAppStyle(Current, ThemeManager.GetAccent(Config.Instance.SelectedColor), ThemeManager.GetAppTheme("BaseLight"));
@@ -210,7 +209,9 @@ namespace LeagueSharp.Loader
                         Config.Save(false);
 
                         File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.exe"), Directories.LoaderRandomFilePath);
+#if DEBUG
                         File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.pdb"), Directories.LoaderRandomPdbFilePath);
+#endif
                         File.Copy(Path.Combine(Directories.CurrentDirectory, "loader.exe.config"), Directories.LoaderRandomConfigFilePath);
 
                         Process.Start(Directories.LoaderRandomFilePath);
@@ -269,7 +270,6 @@ namespace LeagueSharp.Loader
         {
             // Load the language resources.
             var dict = new ResourceDictionary();
-
             if (Config.Instance.SelectedLanguage != null)
             {
                 dict.Source = new Uri("..\\Resources\\Language\\" + Config.Instance.SelectedLanguage + ".xaml", UriKind.Relative);
